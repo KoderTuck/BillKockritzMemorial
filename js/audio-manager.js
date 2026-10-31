@@ -1,86 +1,176 @@
-const AudioManager = {
-  enabled: false,
-  activeSource: "country",
+// Bill Kockritz Memorial Audio Manager
+// Handles background guitar audio, Spotify drawer, button states, and video auto-ducking
 
-  init: function() {
-    this.quickBtn = document.getElementById("quick-music-btn");
-    this.quickIcon = document.getElementById("quick-music-icon");
-    this.drawerBtn = document.getElementById("drawer-toggle-audio-btn");
-    this.countryFrame = document.getElementById("country-music-iframe");
-    this.spotifyDrawer = document.getElementById("music-drawer");
-    
-    this.bindEvents();
-  },
+(function() {
+  let isPlaying = false;
+  let isDucked = false;
+  let activeTab = 'country';
 
-  setSource: function(source) {
-    this.activeSource = source;
-    document.getElementById("tab-country-btn")?.classList.toggle("active", source === "country");
-    document.getElementById("tab-spotify-btn")?.classList.toggle("active", source === "spotify");
-    document.getElementById("country-player-section")?.classList.toggle("hidden", source !== "country");
-    document.getElementById("spotify-player-section")?.classList.toggle("hidden", source !== "spotify");
-  },
-
-  play: function() {
-    this.enabled = true;
-    this.updateUI();
-
-    if (this.activeSource === "country") {
-      this.setSource("country");
-      if (this.countryFrame && !this.countryFrame.src.includes("autoplay=1")) {
-        const sep = this.countryFrame.src.includes("?") ? "&" : "?";
-        this.countryFrame.src += sep + "autoplay=1";
-      } else if (this.countryFrame) {
-        this.sendCommand("playVideo");
-      }
-    } else if (this.activeSource === "spotify") {
-      this.setSource("spotify");
-      this.spotifyDrawer?.classList.remove("hidden");
-    }
-  },
-
-  pause: function() {
-    this.enabled = false;
-    this.updateUI();
-    this.sendCommand("pauseVideo");
-  },
-
-  toggle: function() {
-    this.enabled ? this.pause() : this.play();
-  },
-
-  duckForVideo: function() {
-    if (this.enabled) this.sendCommand("pauseVideo");
-  },
-
-  resumeAfterVideo: function() {
-    if (this.enabled && this.activeSource === "country") {
-      this.sendCommand("playVideo");
-    }
-  },
-
-  sendCommand: function(func) {
-    try {
-      if (this.countryFrame?.contentWindow) {
-        this.countryFrame.contentWindow.postMessage(JSON.stringify({ event: "command", func: func, args: [] }), "*");
-      }
-    } catch (e) {}
-  },
-
-  updateUI: function() {
-    if (this.quickIcon && this.quickBtn) {
-      this.quickIcon.textContent = this.enabled ? "🔊" : "🔇";
-      this.quickBtn.classList.toggle("music-active", this.enabled);
-    }
-    if (this.drawerBtn) {
-      this.drawerBtn.textContent = this.enabled ? "Turn Music Off" : "Turn Music On";
-      this.drawerBtn.className = this.enabled ? "btn btn-sm btn-danger" : "btn btn-sm btn-outline";
-    }
-  },
-
-  bindEvents: function() {
-    this.quickBtn?.addEventListener("click", () => this.toggle());
-    this.drawerBtn?.addEventListener("click", () => this.toggle());
-    document.getElementById("tab-country-btn")?.addEventListener("click", () => this.setSource("country"));
-    document.getElementById("tab-spotify-btn")?.addEventListener("click", () => this.setSource("spotify"));
+  function getIframe() {
+    return document.getElementById('country-music-iframe');
   }
-};
+
+  function postToYoutube(command, args = '') {
+    const iframe = getIframe();
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: command, args: args }),
+          '*'
+        );
+      } catch (err) {
+        console.warn('YouTube postMessage error:', err);
+      }
+    }
+  }
+
+  function updateUI() {
+    const quickBtn = document.getElementById('quick-music-btn');
+    const quickIcon = document.getElementById('quick-music-icon');
+    const drawerToggleBtn = document.getElementById('drawer-toggle-audio-btn');
+    const statusDot = document.getElementById('guitar-status-dot');
+    const statusText = document.getElementById('guitar-status-text');
+
+    if (quickBtn && quickIcon) {
+      if (isPlaying) {
+        quickBtn.classList.add('music-active');
+        quickIcon.textContent = '🔊';
+      } else {
+        quickBtn.classList.remove('music-active');
+        quickIcon.textContent = '🔇';
+      }
+    }
+
+    if (drawerToggleBtn) {
+      drawerToggleBtn.textContent = isPlaying ? 'Turn Music Off' : 'Turn Music On';
+      if (isPlaying) {
+        drawerToggleBtn.classList.add('btn-primary');
+        drawerToggleBtn.classList.remove('btn-outline');
+      } else {
+        drawerToggleBtn.classList.remove('btn-primary');
+        drawerToggleBtn.classList.add('btn-outline');
+      }
+    }
+
+    if (statusDot && statusText) {
+      if (isPlaying) {
+        statusDot.classList.add('playing');
+        statusText.textContent = isDucked ? 'Paused for video clip...' : 'Streaming guitar instrumental...';
+      } else {
+        statusDot.classList.remove('playing');
+        statusText.textContent = 'Music is paused';
+      }
+    }
+  }
+
+  const AudioManager = {
+    play: function() {
+      isPlaying = true;
+      isDucked = false;
+      postToYoutube('playVideo');
+      updateUI();
+    },
+
+    pause: function() {
+      isPlaying = false;
+      isDucked = false;
+      postToYoutube('pauseVideo');
+      updateUI();
+    },
+
+    toggle: function() {
+      if (isPlaying) {
+        this.pause();
+      } else {
+        this.play();
+      }
+    },
+
+    duck: function() {
+      if (isPlaying && !isDucked) {
+        isDucked = true;
+        postToYoutube('pauseVideo');
+        updateUI();
+      }
+    },
+
+    unduck: function() {
+      if (isDucked) {
+        isDucked = false;
+        if (isPlaying) {
+          postToYoutube('playVideo');
+        }
+        updateUI();
+      }
+    },
+
+    isPlaying: function() {
+      return isPlaying;
+    },
+
+    init: function() {
+      const quickBtn = document.getElementById('quick-music-btn');
+      if (quickBtn) {
+        quickBtn.addEventListener('click', () => AudioManager.toggle());
+      }
+
+      const drawerToggle = document.getElementById('music-drawer-toggle');
+      const drawer = document.getElementById('music-drawer');
+      const closeDrawerBtn = document.getElementById('close-drawer-btn');
+
+      if (drawerToggle && drawer) {
+        drawerToggle.addEventListener('click', () => {
+          drawer.classList.toggle('hidden');
+        });
+      }
+
+      if (closeDrawerBtn && drawer) {
+        closeDrawerBtn.addEventListener('click', () => {
+          drawer.classList.add('hidden');
+        });
+      }
+
+      const playCountryBtn = document.getElementById('play-country-btn');
+      if (playCountryBtn) {
+        playCountryBtn.addEventListener('click', () => AudioManager.play());
+      }
+
+      const pauseCountryBtn = document.getElementById('pause-country-btn');
+      if (pauseCountryBtn) {
+        pauseCountryBtn.addEventListener('click', () => AudioManager.pause());
+      }
+
+      const drawerToggleAudioBtn = document.getElementById('drawer-toggle-audio-btn');
+      if (drawerToggleAudioBtn) {
+        drawerToggleAudioBtn.addEventListener('click', () => AudioManager.toggle());
+      }
+
+      const tabCountryBtn = document.getElementById('tab-country-btn');
+      const tabSpotifyBtn = document.getElementById('tab-spotify-btn');
+      const countrySection = document.getElementById('country-player-section');
+      const spotifySection = document.getElementById('spotify-player-section');
+
+      if (tabCountryBtn && tabSpotifyBtn && countrySection && spotifySection) {
+        tabCountryBtn.addEventListener('click', () => {
+          tabCountryBtn.classList.add('active');
+          tabSpotifyBtn.classList.remove('active');
+          countrySection.classList.remove('hidden');
+          spotifySection.classList.add('hidden');
+          activeTab = 'country';
+        });
+
+        tabSpotifyBtn.addEventListener('click', () => {
+          tabSpotifyBtn.classList.add('active');
+          tabCountryBtn.classList.remove('active');
+          spotifySection.classList.remove('hidden');
+          countrySection.classList.add('hidden');
+          activeTab = 'spotify';
+        });
+      }
+
+      updateUI();
+    }
+  };
+
+  window.AudioManager = AudioManager;
+})();

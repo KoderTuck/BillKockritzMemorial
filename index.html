@@ -120,9 +120,7 @@
     <button id="lightbox-prev-btn" class="lightbox-nav-btn prev" title="Previous Picture (Left Arrow)">◀</button>
     
     <div class="lightbox-content">
-      <div id="lightbox-media-container" class="lightbox-media-container">
-        <!-- Image or video populated dynamically -->
-      </div>
+      <div id="lightbox-media-container" class="lightbox-media-container"></div>
       <div class="lightbox-details">
         <p id="lightbox-caption-text" class="lightbox-caption-text"></p>
         <span id="lightbox-counter" class="lightbox-counter">1 / 1</span>
@@ -154,7 +152,7 @@
             <strong id="guitar-status-text">Ready to stream</strong>
           </div>
           <p class="status-desc">
-            Plays YouTube acoustic guitar instrumental directly in the background. Audio automatically ducks/pauses whenever slide video clips play.
+            Plays YouTube acoustic guitar instrumental directly in the background. Audio automatically pauses whenever slide video clips play.
           </p>
         </div>
         <div class="panel-btn-row">
@@ -204,7 +202,7 @@
     </div>
   </div>
 
-  <!-- Persistent YouTube Background Player (Hidden from view) -->
+  <!-- Persistent YouTube Background Player (Hidden) -->
   <div id="youtube-audio-host" style="position:fixed; left:-9999px; top:-9999px; width:200px; height:200px; opacity:0.001; pointer-events:none; z-index:-9999;">
     <iframe 
       id="country-music-iframe"
@@ -217,8 +215,11 @@
     </iframe>
   </div>
 
-  <!-- Scripts in execution order -->
+  <!-- Modular Scripts in Execution Order -->
   <script src="media-data.js"></script>
-  <script src="app.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/audio-manager.js"></script>
+  <script src="js/archive.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

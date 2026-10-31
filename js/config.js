@@ -1,7 +1,14 @@
+// Bill Kockritz Memorial Configuration & Utilities
+// Loaded by index.html and admin.html
+
 const CONFIG = {
   defaultPhotoPacingMs: 5500,
   videoTargetVolume: 0.55,
-  
+  storageKeyService: "BILL_SERVICE_PLAYLIST",
+  storageKeyLong: "BILL_LONG_PLAYLIST",
+  storageKeyPacing: "BILL_SERVICE_PHOTO_DURATION",
+
+  // Sacred and goofy quotes celebrating Bill
   billisms: [
     "“My life’s goal is to get to the end and hear Jesus say, well done, good and faithful servant!”",
     "“Why catch a small fish when there’s a trophy waiting out in the deep water?”",
@@ -22,22 +29,36 @@ const UTILS = {
     }
     return arr;
   },
-  
-  getActiveMediaList: function(masterList) {
-    const saved = localStorage.getItem("BILL_SERVICE_CUSTOM_MEDIA");
-    if (saved) {
-      try {
+
+  getSavedPlaylist: function(key, fallbackGenerator) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {
-        console.warn("Could not parse saved media", e);
       }
+    } catch (e) {
+      console.warn("Could not parse saved playlist for key: " + key, e);
     }
-    return [...masterList];
+    return fallbackGenerator ? fallbackGenerator() : [];
   },
 
   getSavedPacingMs: function() {
-    const saved = localStorage.getItem("BILL_SERVICE_PHOTO_DURATION");
-    return saved ? Math.round(parseFloat(saved) * 1000) : CONFIG.defaultPhotoPacingMs;
+    try {
+      const saved = localStorage.getItem(CONFIG.storageKeyPacing);
+      if (saved) {
+        const val = parseInt(saved, 10);
+        if (!isNaN(val) && val > 1000) return val;
+      }
+    } catch (e) {
+      console.warn("Could not read saved pacing", e);
+    }
+    return CONFIG.defaultPhotoPacingMs;
+  },
+
+  formatTime: function(totalSeconds) {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = Math.floor(totalSeconds % 60);
+    return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
   }
 };
