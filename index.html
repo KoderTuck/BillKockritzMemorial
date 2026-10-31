@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Celebrating Bill Kockritz — Faithful Servant & Joyful Heart</title>
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -61,9 +61,7 @@
       <!-- Slide Viewport -->
       <div class="slide-viewport" id="slide-viewport">
         <div id="media-slot" class="media-slot"></div>
-        <div id="slide-caption-overlay" class="slide-caption-overlay">
-          <p id="slide-caption-text"></p>
-        </div>
+        <!-- Caption Overlay Removed Per Request -->
       </div>
 
       <!-- Playback Controls Bar -->
@@ -225,8 +223,11 @@
     </div>
   </div>
 
-  <!-- Scripts in execution order -->
+  <!-- Modular Scripts -->
   <script src="media-data.js"></script>
-  <script src="app.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/audio-manager.js"></script>
+  <script src="js/archive.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+
 :root {
   --bg-primary: #0e1116;
   --bg-secondary: #171c24;
@@ -244,24 +245,9 @@ body {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
 }
 
-/* Caption Overlay */
+/* Caption Overlay - Disabled */
 .slide-caption-overlay {
   display: none !important;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
-  padding: 24px 30px 16px;
-  text-align: center;
-  pointer-events: none;
-}
-
-.slide-caption-overlay p {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
 }
 
 /* Playback Control Bar */
