@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Celebrating Bill Kockritz — Faithful Servant & Joyful Heart</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,26 +23,23 @@
       </div>
     </div>
 
-    <!-- Mode Selector: Walk-In (Prelude), 7-Min Service, Walk-Out (Postlude), Full Archive -->
+    <!-- Mode Selector: Long Show, 7-Min Service, Full Archive -->
     <div class="header-center">
       <div class="mode-toggle-group" role="tablist">
-        <button id="mode-prelude-btn" class="mode-btn" role="tab" title="Random pool of memories for guest arrival">
-          <span class="icon">🎲</span> Walk-In (Random)
+        <button id="mode-long-btn" class="mode-btn" role="tab" title="Extended curated slideshow of all memories">
+          <span class="icon">📽️</span> Long Show
         </button>
         <button id="mode-service-btn" class="mode-btn active" role="tab" title="Curated 7-minute chronological presentation">
           <span class="icon">⏱️</span> 7-Min Service
         </button>
-        <button id="mode-postlude-btn" class="mode-btn" role="tab" title="Fresh pool of memories for mingling after service">
-          <span class="icon">✨</span> Walk-Out (Fresh)
-        </button>
-        <button id="mode-archive-btn" class="mode-btn" role="tab" title="Browse all photos and videos">
+        <button id="mode-archive-btn" class="mode-btn" role="tab" title="Search and browse all photos and videos">
           <span class="icon">🖼️</span> All Media (<span id="archive-count">0</span>)
         </button>
       </div>
     </div>
 
     <div class="header-right">
-      <a href="admin.html" class="btn btn-outline" title="Curate service photos & order">
+      <a href="admin.html" class="btn btn-outline" title="Curate service & long show photos & order">
         <span class="icon">⚙️</span> Curator Admin
       </a>
       <button id="billism-btn" class="btn btn-outline" title="A spark of Bill's good-natured humor">
@@ -90,7 +87,7 @@
           <select id="speed-select" class="speed-select">
             <option value="4500">4.5s</option>
             <option value="5000">5.0s</option>
-            <option value="5500" selected>5.5s (Service)</option>
+            <option value="5500" selected>5.5s</option>
             <option value="6000">6.0s</option>
             <option value="7000">7.0s (Ambient)</option>
             <option value="9000">9.0s</option>
@@ -101,7 +98,7 @@
     </div>
   </main>
 
-  <!-- Full Photo Archive Grid View -->
+  <!-- Full Photo Archive Grid View (Searchable) -->
   <section id="archive-view" class="archive-container hidden">
     <div class="archive-header">
       <div>
@@ -110,11 +107,30 @@
       </div>
       <div class="archive-search-wrap">
         <input type="text" id="archive-search" placeholder="Search memories (e.g. 4-Wheeler, Seahawks, Janet)..." />
+        <span id="archive-search-stats" class="archive-search-stats"></span>
       </div>
     </div>
 
     <div class="archive-grid" id="archive-grid"></div>
   </section>
+
+  <!-- Interactive Lightbox Modal for All Media (Click to view, Left/Right to navigate) -->
+  <div id="archive-lightbox-modal" class="lightbox-modal hidden">
+    <button id="lightbox-close-btn" class="lightbox-close-btn" title="Close (Escape)">✕</button>
+    <button id="lightbox-prev-btn" class="lightbox-nav-btn prev" title="Previous Picture (Left Arrow)">◀</button>
+    
+    <div class="lightbox-content">
+      <div id="lightbox-media-container" class="lightbox-media-container">
+        <!-- Image or video populated dynamically -->
+      </div>
+      <div class="lightbox-details">
+        <p id="lightbox-caption-text" class="lightbox-caption-text"></p>
+        <span id="lightbox-counter" class="lightbox-counter">1 / 1</span>
+      </div>
+    </div>
+
+    <button id="lightbox-next-btn" class="lightbox-nav-btn next" title="Next Picture (Right Arrow)">▶</button>
+  </div>
 
   <!-- Music Drawer / Player Controls Drawer -->
   <aside id="music-drawer" class="music-drawer hidden">
@@ -138,7 +154,7 @@
             <strong id="guitar-status-text">Ready to stream</strong>
           </div>
           <p class="status-desc">
-            Plays YouTube acoustic guitar instrumental directly in the background. Audio will automatically pause whenever slide video clips play.
+            Plays YouTube acoustic guitar instrumental directly in the background. Audio automatically ducks/pauses whenever slide video clips play.
           </p>
         </div>
         <div class="panel-btn-row">
@@ -188,7 +204,7 @@
     </div>
   </div>
 
-  <!-- Persistent YouTube Background Player (Hidden from view, never paused by drawer toggling) -->
+  <!-- Persistent YouTube Background Player (Hidden from view) -->
   <div id="youtube-audio-host" style="position:fixed; left:-9999px; top:-9999px; width:200px; height:200px; opacity:0.001; pointer-events:none; z-index:-9999;">
     <iframe 
       id="country-music-iframe"

@@ -3,367 +3,891 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Curator Admin — Bill Kockritz Memorial Media</title>
+  <title>Curator Admin — Bill Kockritz Memorial</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0b0e14;
-      --bg-panel: #131822;
-      --bg-card: #1a2230;
-      --border: #283347;
-      --text: #f0f3f6;
-      --text-muted: #8e9bb0;
-      --gold: #e5b357;
-      --gold-dark: #b8862d;
-      --green: #7ee787;
-      --red: #ff7b72;
-      --blue: #58a6ff;
+      --bg: #0b0e14;
+      --card-bg: #141923;
+      --surface: #1e2533;
+      --border: #293245;
+      --text: #f0f3f8;
+      --muted: #8e9bb0;
+      --gold: #d4a34b;
+      --gold-hover: #e2b768;
+      --green: #4ade80;
+      --red: #f87171;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
       color: var(--text);
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      padding: 20px 24px;
       min-height: 100vh;
-    }
-
-    .admin-container { max-width: 1560px; margin: 0 auto; }
-
-    /* Top Command Header */
-    .admin-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+    }
+    header {
+      background: var(--card-bg);
       border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 16px;
-    }
-
-    .admin-title h1 { font-size: 1.45rem; font-weight: 700; color: #fff; }
-    .admin-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
-
-    /* Pacing & Target Stats Bar */
-    .stats-bar {
-      display: flex;
       flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
-      background: var(--bg-panel);
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
     }
-
-    .stat-pill {
-      font-size: 0.82rem;
-      color: var(--text-muted);
+    .header-left {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 12px;
     }
-
-    .stat-pill strong { font-size: 1.05rem; color: var(--gold); }
-
-    .pacing-input {
-      width: 58px;
-      background: var(--bg-primary);
-      border: 1px solid var(--border);
-      color: var(--gold);
+    .header-left h1 {
+      font-size: 1.15rem;
       font-weight: 700;
-      padding: 4px 6px;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 0.9rem;
-      outline: none;
     }
-    .pacing-input:focus { border-color: var(--gold); }
-
+    .header-left p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .btn-group-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .btn {
-      padding: 7px 14px;
+      padding: 8px 16px;
+      border-radius: 8px;
       font-size: 0.82rem;
       font-weight: 600;
-      border-radius: 7px;
       cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
     }
+    .btn-gold { background: var(--gold); color: #111; }
+    .btn-gold:hover { background: var(--gold-hover); }
+    .btn-outline { background: transparent; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--surface); }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-sm { padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; }
 
-    .btn-gold { background: var(--gold); color: #111; font-weight: 700; }
-    .btn-gold:hover { background: #f0c36d; }
-    .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
-    .btn-outline:hover { background: var(--bg-card); border-color: var(--text-muted); }
-    .btn-danger { background: #a83232; color: #fff; }
-    .btn-danger:hover { background: #c53e3e; }
-
-    /* Columns Layout */
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 20px;
-      height: calc(100vh - 130px);
-    }
-    @media (max-width: 1080px) {
-      .admin-grid { grid-template-columns: 1fr; height: auto; }
-    }
-
-    .panel {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+    /* Playlist Selector Tabs */
+    .playlist-tabs-bar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
       display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .panel-head {
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
       gap: 8px;
     }
-
-    .panel-head-row {
+    .playlist-tab-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .playlist-tab-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+    .playlist-tab-btn.active {
+      background: var(--gold);
+      color: #111;
+      border-color: var(--gold);
+      box-shadow: 0 4px 12px rgba(212, 163, 75, 0.3);
     }
 
-    .panel-head h2 { font-size: 1.1rem; color: #fff; }
+    /* Stats Banner */
+    .stats-banner {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 0.85rem;
+    }
+    .stat-badge {
+      background: var(--card-bg);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .stat-badge strong {
+      color: var(--gold);
+    }
+    .pacing-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pacing-control input {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 60px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
 
+    /* Dual Column Layout */
+    .curator-workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: calc(100vh - 210px);
+    }
+    .panel-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .panel-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-title-row h2 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .search-box {
-      width: 100%;
-      background: var(--bg-primary);
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
       padding: 8px 12px;
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       outline: none;
+      width: 100%;
     }
-    .search-box:focus { border-color: var(--gold); }
-
+    .search-box:focus {
+      border-color: var(--gold);
+    }
     .panel-list {
       flex: 1;
       overflow-y: auto;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      padding-right: 6px;
     }
 
-    /* List Rows */
+    /* List Item Row */
     .item-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       gap: 12px;
-      background: var(--bg-card);
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease;
     }
-    .item-row:hover { border-color: #3f4e6b; }
+    .item-row:hover {
+      border-color: var(--muted);
+    }
     .item-row.is-finale {
       border-color: var(--gold);
-      background: #241d13;
+      background: rgba(212, 163, 75, 0.08);
     }
-
     .item-thumb {
-      width: 52px;
-      height: 52px;
-      border-radius: 6px;
+      width: 58px;
+      height: 44px;
       object-fit: cover;
+      border-radius: 6px;
       background: #000;
       flex-shrink: 0;
     }
-
     .item-info {
       flex: 1;
       min-width: 0;
     }
-
     .item-title {
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: #fff;
     }
-
     .item-meta {
       font-size: 0.74rem;
-      color: var(--text-muted);
-      margin-top: 3px;
+      color: var(--muted);
+      margin-top: 2px;
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-
-    .filename-code {
-      font-family: monospace;
-      color: #9ba7bd;
-      background: rgba(0,0,0,0.3);
-      padding: 1px 4px;
-      border-radius: 4px;
-    }
-
     .badge-video {
-      background: #1f3659;
-      color: var(--blue);
-      padding: 2px 6px;
+      background: #3b82f6;
+      color: #fff;
+      padding: 1px 6px;
       border-radius: 4px;
-      font-weight: 700;
+      font-size: 0.68rem;
     }
-
     .badge-finale {
-      background: rgba(229, 179, 87, 0.2);
-      color: var(--gold);
-      padding: 2px 6px;
+      background: var(--gold);
+      color: #111;
+      padding: 1px 6px;
       border-radius: 4px;
+      font-size: 0.68rem;
       font-weight: 700;
     }
-
-    /* Video Volume Balance Slider Controls */
     .volume-slider-wrap {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(88, 166, 255, 0.1);
-      border: 1px solid rgba(88, 166, 255, 0.25);
+      background: rgba(0, 0, 0, 0.3);
       padding: 2px 8px;
       border-radius: 6px;
-      margin-left: 4px;
-    }
-    .volume-slider-wrap label {
       font-size: 0.72rem;
-      color: var(--blue);
-      font-weight: 600;
-      white-space: nowrap;
     }
-    .volume-range {
-      width: 75px;
-      accent-color: var(--blue);
+    .volume-slider-wrap input {
+      width: 70px;
       cursor: pointer;
-      vertical-align: middle;
-    }
-    .volume-pct {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #fff;
-      min-width: 32px;
-      font-variant-numeric: tabular-nums;
     }
 
-    /* Jump & Movement Actions */
-    .jump-box-wrap {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-right: 4px;
-    }
-    .jump-box-wrap label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-    .jump-input {
-      width: 44px;
-      background: var(--bg-primary);
-      border: 1px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.82rem;
-      padding: 4px;
-      border-radius: 5px;
-      text-align: center;
-      outline: none;
-    }
-    .jump-input:focus { border-color: var(--gold); }
-
+    /* Row Actions */
     .btn-group {
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-shrink: 0;
     }
-
     .btn-icon {
-      background: #252f42;
+      background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 4px 8px;
-      font-size: 0.74rem;
-      border-radius: 5px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.15s ease;
     }
-    .btn-icon:hover { background: #33415c; border-color: var(--text-muted); color: #fff; }
+    .btn-icon:hover {
+      background: var(--border);
+      color: #fff;
+    }
+    .jump-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .jump-input {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px;
+      height: 28px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
-  <div class="admin-container">
-    <header class="admin-header">
-      <div class="admin-title">
-        <h1>Memorial Presentation Curator</h1>
-        <p>Curate the exact order of the 7-minute service slideshow, balance video volumes, and search all 419 archive files.</p>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div>
+        <h1>Curator Admin — Bill Kockritz Memorial</h1>
+        <p>Curate both the 7-Min Service show and the extended Long Show</p>
       </div>
+    </div>
+    <div class="btn-group-top">
+      <a href="index.html" class="btn btn-outline">⬅️ Open Memorial Site</a>
+      <button id="reset-default-btn" class="btn btn-danger" title="Clear saved curation and restore master lists">🗑️ Reset to Master</button>
+      <button id="save-browser-btn" class="btn btn-gold">💾 Save to Browser</button>
+      <button id="export-js-btn" class="btn btn-outline" title="Export media-data.js file">📥 Export media-data.js</button>
+    </div>
+  </header>
 
-      <div class="stats-bar">
-        <div class="stat-pill">
-          Photo Duration:
-          <input type="number" id="pacing-input" class="pacing-input" value="5.5" step="0.5" min="2" max="15" title="Seconds per photo" />
-          <span>sec</span>
-        </div>
-        <div class="stat-pill">Service Items: <strong id="service-count">0</strong></div>
-        <div class="stat-pill">Est. Time: <strong id="est-time">0m 00s</strong></div>
-        <div class="stat-pill" id="target-diff-pill"></div>
-        <button id="reset-default-btn" class="btn btn-danger" title="Clear saved browser layout and restore the full 419-item master list">🗑️ Reset to Master</button>
-        <button id="save-browser-btn" class="btn btn-gold">💾 Save to Browser</button>
-        <button id="export-js-btn" class="btn btn-outline">⬇️ Export media-data.js</button>
-        <a href="index.html" class="btn btn-outline">⬅️ Open Memorial Site</a>
-      </div>
-    </header>
-
-    <main class="admin-grid">
-      <section class="panel">
-        <div class="panel-head">
-          <div class="panel-head-row">
-            <h2>⭐ 7-Minute Service Order (<span id="service-header-count">0</span>)</h2>
-            <small style="color: var(--gold);">Use order boxes, Top/Bottom buttons, or volume sliders</small>
-          </div>
-          <input type="text" id="service-search" class="search-box" placeholder="Filter service list by filename or caption..." />
-        </div>
-        <div class="panel-list" id="service-list"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <div class="panel-head-row">
-            <h2>🗂️ Master Archive Pool (<span id="pool-count">0</span>)</h2>
-            <small style="color: var(--text-muted);">Pool for Walk-In & Walk-Out</small>
-          </div>
-          <input type="text" id="pool-search" class="search-box" placeholder="Search by filename or caption..." />
-        </div>
-        <div class="panel-list" id="pool-list"></div>
-      </section>
-    </main>
+  <!-- Playlist Tabs Bar -->
+  <div class="playlist-tabs-bar">
+    <button id="tab-service-btn" class="playlist-tab-btn active">
+      ⏱️ Curate 7-Min Service Playlist (<span id="tab-service-count">0</span>)
+    </button>
+    <button id="tab-long-btn" class="playlist-tab-btn">
+      📽️ Curate Long Show Playlist (<span id="tab-long-count">0</span>)
+    </button>
   </div>
 
-  <!-- Modular Scripts -->
+  <!-- Dynamic Stats Banner -->
+  <div class="stats-banner">
+    <div class="stats-group">
+      <div class="stat-badge">
+        Active Playlist: <strong id="active-playlist-label">7-Min Service</strong>
+      </div>
+      <div class="stat-badge">
+        Slides: <strong id="curated-slide-count">0</strong>
+      </div>
+      <div class="stat-badge">
+        Videos: <strong id="curated-video-count">0</strong>
+      </div>
+      <div class="stat-badge">
+        Est. Runtime: <strong id="est-runtime">0m 00s</strong>
+      </div>
+      <div id="target-diff-pill"></div>
+    </div>
+
+    <div class="stats-group">
+      <div class="pacing-control">
+        <label for="pacing-input">Photo Duration:</label>
+        <input type="number" id="pacing-input" step="0.5" min="2" max="15" value="5.5">
+        <span>sec</span>
+      </div>
+      <div id="long-show-batch-actions" style="display: none;">
+        <button id="btn-add-all-long" class="btn btn-sm btn-outline">+ Include All Master Pool</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Curator Dual Columns -->
+  <main class="curator-workspace">
+    
+    <!-- Left Column: Current Active Curated Playlist -->
+    <section class="panel-card">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <h2 id="left-panel-title">⏱️ 7-Min Service Order</h2>
+          <span style="font-size:0.75rem; color:var(--muted)">Drag / Reorder / Jump</span>
+        </div>
+        <input type="text" id="left-search" class="search-box" placeholder="Filter this playlist by caption or filename..." />
+      </div>
+      <div class="panel-list" id="curated-list-container">
+        <!-- Rows populated dynamically -->
+      </div>
+    </section>
+
+    <!-- Right Column: Master Media Pool -->
+    <section class="panel-card">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <h2>🖼️ Master Media Pool (<span id="pool-total-count">0</span> total)</h2>
+          <span style="font-size:0.75rem; color:var(--muted)">Click "+ Add" to include in active list</span>
+        </div>
+        <input type="text" id="pool-search" class="search-box" placeholder="Search master pool by caption or filename..." />
+      </div>
+      <div class="panel-list" id="pool-list-container">
+        <!-- Master items populated dynamically -->
+      </div>
+    </section>
+
+  </main>
+
   <script src="media-data.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/admin.js"></script>
+  <script>
+  (function () {
+    // 1. Data Initialization & Self-Healing
+    const rawMaster = window.BILL_MASTER_MEDIA || window.BILL_MEDIA || [];
+    const masterList = Array.isArray(rawMaster) ? rawMaster : [];
+
+    // Working Curated Playlists
+    let servicePlaylist = [];
+    let longShowPlaylist = [];
+    let activeTab = 'service'; // 'service' or 'long'
+
+    let servicePacing = 5.5;
+    let longPacing = 6.0;
+
+    // Load saved settings from localStorage
+    const savedServicePacing = localStorage.getItem("BILL_SERVICE_PHOTO_DURATION");
+    if (savedServicePacing) servicePacing = parseFloat(savedServicePacing);
+
+    const savedLongPacing = localStorage.getItem("BILL_LONG_PHOTO_DURATION");
+    if (savedLongPacing) longPacing = parseFloat(savedLongPacing);
+
+    const savedService = localStorage.getItem("BILL_SERVICE_PLAYLIST");
+    const savedLong = localStorage.getItem("BILL_LONG_PLAYLIST");
+    const legacyCustom = localStorage.getItem("BILL_SERVICE_CUSTOM_MEDIA");
+
+    if (savedService) {
+      try { servicePlaylist = JSON.parse(savedService); } catch (e) { servicePlaylist = []; }
+    } else if (legacyCustom) {
+      try {
+        const parsed = JSON.parse(legacyCustom);
+        servicePlaylist = parsed.filter(i => i.inService);
+      } catch (e) { servicePlaylist = []; }
+    }
+
+    if (!servicePlaylist || servicePlaylist.length === 0) {
+      const tagged = masterList.filter(i => i.inService && !i.isFinale);
+      if (tagged.length > 0) {
+        servicePlaylist = [...tagged];
+      } else {
+        const reg = masterList.filter(i => !i.isFinale);
+        servicePlaylist = reg.filter((_, idx) => idx % 4 === 0);
+      }
+      const fin = masterList.find(i => i.isFinale);
+      if (fin) servicePlaylist.push(fin);
+    }
+
+    if (savedLong) {
+      try { longShowPlaylist = JSON.parse(savedLong); } catch (e) { longShowPlaylist = []; }
+    } else if (legacyCustom) {
+      try {
+        const parsed = JSON.parse(legacyCustom);
+        const filtered = parsed.filter(i => i.inLongShow !== false);
+        if (filtered.length > 0) longShowPlaylist = filtered;
+      } catch (e) {}
+    }
+
+    if (!longShowPlaylist || longShowPlaylist.length === 0) {
+      const nonFin = masterList.filter(i => !i.isFinale);
+      const fin = masterList.find(i => i.isFinale);
+      longShowPlaylist = [...nonFin];
+      if (fin) longShowPlaylist.push(fin);
+    }
+
+    // DOM Elements
+    const els = {
+      tabServiceBtn: document.getElementById("tab-service-btn"),
+      tabLongBtn: document.getElementById("tab-long-btn"),
+      tabServiceCount: document.getElementById("tab-service-count"),
+      tabLongCount: document.getElementById("tab-long-count"),
+      activePlaylistLabel: document.getElementById("active-playlist-label"),
+      curatedSlideCount: document.getElementById("curated-slide-count"),
+      curatedVideoCount: document.getElementById("curated-video-count"),
+      estRuntime: document.getElementById("est-runtime"),
+      targetDiffPill: document.getElementById("target-diff-pill"),
+      pacingInput: document.getElementById("pacing-input"),
+      longShowBatchActions: document.getElementById("long-show-batch-actions"),
+      btnAddAllLong: document.getElementById("btn-add-all-long"),
+      leftPanelTitle: document.getElementById("left-panel-title"),
+      leftSearch: document.getElementById("left-search"),
+      curatedListContainer: document.getElementById("curated-list-container"),
+      poolTotalCount: document.getElementById("pool-total-count"),
+      poolSearch: document.getElementById("pool-search"),
+      poolListContainer: document.getElementById("pool-list-container"),
+      btnSave: document.getElementById("save-browser-btn"),
+      btnReset: document.getElementById("reset-default-btn"),
+      btnExport: document.getElementById("export-js-btn")
+    };
+
+    // Helper: Get Current Active Playlist
+    function getActiveList() {
+      return activeTab === 'service' ? servicePlaylist : longShowPlaylist;
+    }
+
+    function setActiveList(newList) {
+      if (activeTab === 'service') {
+        servicePlaylist = newList;
+      } else {
+        longShowPlaylist = newList;
+      }
+    }
+
+    function getActivePacing() {
+      return activeTab === 'service' ? servicePacing : longPacing;
+    }
+
+    // Calculations & Banner Updates
+    function updateStats() {
+      const activeList = getActiveList();
+      const nonFinList = activeList.filter(i => !i.isFinale);
+      const pacing = getActivePacing();
+      
+      const videoCount = activeList.filter(i => i.type === 'video').length;
+      const photoCount = activeList.length - videoCount;
+
+      let totalSec = 0;
+      activeList.forEach(i => {
+        totalSec += (i.type === 'video' ? (i.duration || 20) : pacing);
+      });
+
+      const m = Math.floor(totalSec / 60);
+      const s = Math.round(totalSec % 60);
+      const timeStr = `${m}m ${s.toString().padStart(2, '0')}s`;
+
+      if (els.tabServiceCount) els.tabServiceCount.textContent = servicePlaylist.length;
+      if (els.tabLongCount) els.tabLongCount.textContent = longShowPlaylist.length;
+      if (els.curatedSlideCount) els.curatedSlideCount.textContent = activeList.length;
+      if (els.curatedVideoCount) els.curatedVideoCount.textContent = videoCount;
+      if (els.poolTotalCount) els.poolTotalCount.textContent = masterList.length;
+      if (els.estRuntime) els.estRuntime.textContent = timeStr;
+      if (els.pacingInput) els.pacingInput.value = pacing;
+
+      if (activeTab === 'service') {
+        els.activePlaylistLabel.textContent = "7-Min Service";
+        els.leftPanelTitle.textContent = "⏱️ 7-Min Service Order";
+        els.longShowBatchActions.style.display = "none";
+
+        // Target feedback: 6:00 to 8:00 (360s to 480s)
+        if (totalSec >= 360 && totalSec <= 480) {
+          const off = Math.round(totalSec - 420);
+          els.targetDiffPill.innerHTML = `<span style="color:var(--green); font-weight:700;">✅ Perfect Window (${off >= 0 ? '+' : ''}${off}s off 7m)</span>`;
+        } else if (totalSec < 360) {
+          const needed = Math.ceil((360 - totalSec) / pacing);
+          els.targetDiffPill.innerHTML = `<span style="color:var(--gold); font-weight:600;">⏳ Short. Add ~${needed} photos to reach 6m</span>`;
+        } else {
+          const trim = Math.ceil((totalSec - 480) / pacing);
+          els.targetDiffPill.innerHTML = `<span style="color:var(--red); font-weight:600;">⏱️ Long. Trim ~${trim} photos to stay under 8m</span>`;
+        }
+      } else {
+        els.activePlaylistLabel.textContent = "Long Show";
+        els.leftPanelTitle.textContent = "📽️ Long Show Order";
+        els.longShowBatchActions.style.display = "block";
+        els.targetDiffPill.innerHTML = `<span style="color:var(--gold); font-weight:600;">✨ Curated Extended Presentation</span>`;
+      }
+    }
+
+    // Render Left Column (Active Curated Playlist)
+    function renderCuratedList() {
+      const container = els.curatedListContainer;
+      if (!container) return;
+      container.innerHTML = "";
+
+      const activeList = getActiveList();
+      const nonFinList = activeList.filter(i => !i.isFinale);
+      const q = (els.leftSearch?.value || "").toLowerCase().trim();
+
+      activeList.forEach((item, idx) => {
+        const fn = item.src.split("/").pop();
+        const cap = item.caption || fn;
+        if (q && !fn.toLowerCase().includes(q) && !cap.toLowerCase().includes(q)) return;
+
+        const row = document.createElement("div");
+        row.className = `item-row ${item.isFinale ? 'is-finale' : ''}`;
+
+        const thumb = document.createElement("img");
+        thumb.className = "item-thumb";
+        thumb.src = item.src;
+
+        const info = document.createElement("div");
+        info.className = "item-info";
+
+        let metaHtml = `<span style="color:var(--muted)">${fn}</span> `;
+        if (item.type === "video") {
+          metaHtml += `<span class="badge-video">🎬 Video (${item.duration || 20}s)</span>`;
+        } else {
+          metaHtml += `<span>Photo</span>`;
+        }
+
+        if (item.isFinale) {
+          metaHtml += ` • <span class="badge-finale">LOCKED FINALE</span>`;
+        }
+
+        info.innerHTML = `<div class="item-title" title="${cap}">${cap}</div><div class="item-meta">${metaHtml}</div>`;
+
+        // If video, add volume slider
+        if (item.type === "video") {
+          const volWrap = document.createElement("div");
+          volWrap.className = "volume-slider-wrap";
+          const currentVol = (typeof item.volume === 'number') ? item.volume : 0.55;
+          volWrap.innerHTML = `
+            <span>🔊</span>
+            <input type="range" min="0" max="1" step="0.05" value="${currentVol}">
+            <span class="vol-num">${Math.round(currentVol * 100)}%</span>
+          `;
+          volWrap.querySelector("input").oninput = (e) => {
+            const v = parseFloat(e.target.value);
+            item.volume = v;
+            volWrap.querySelector(".vol-num").textContent = `${Math.round(v * 100)}%`;
+            // Also sync to master item
+            const m = masterList.find(x => x.src === item.src);
+            if (m) m.volume = v;
+          };
+          info.querySelector(".item-meta").appendChild(volWrap);
+        }
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "btn-group";
+
+        if (!item.isFinale) {
+          btnGroup.innerHTML = `
+            <div class="jump-input-wrap">
+              <label>#</label>
+              <input type="number" class="jump-input" value="${idx + 1}" min="1" max="${nonFinList.length}">
+            </div>
+            <button class="btn-icon" data-act="top" title="Move to Top">⏮</button>
+            <button class="btn-icon" data-act="up" title="Move Up">▲</button>
+            <button class="btn-icon" data-act="down" title="Move Down">▼</button>
+            <button class="btn-icon" data-act="bottom" title="Move to Bottom">⏭</button>
+            <button class="btn-icon btn-danger" data-act="remove" title="Remove from this playlist">✕</button>
+          `;
+
+          const jumpInp = btnGroup.querySelector(".jump-input");
+          jumpInp.onchange = (e) => {
+            jumpItem(item, parseInt(e.target.value, 10));
+          };
+
+          btnGroup.querySelectorAll("button").forEach(b => {
+            b.onclick = () => {
+              const act = b.dataset.act;
+              if (act === 'top') jumpItem(item, 1);
+              if (act === 'up') stepItem(item, -1);
+              if (act === 'down') stepItem(item, 1);
+              if (act === 'bottom') jumpItem(item, nonFinList.length);
+              if (act === 'remove') removeItem(item);
+            };
+          });
+        }
+
+        row.appendChild(thumb);
+        row.appendChild(info);
+        row.appendChild(btnGroup);
+        container.appendChild(row);
+      });
+    }
+
+    // Render Right Column (Master Media Pool)
+    function renderPoolList() {
+      const container = els.poolListContainer;
+      if (!container) return;
+      container.innerHTML = "";
+
+      const activeList = getActiveList();
+      const q = (els.poolSearch?.value || "").toLowerCase().trim();
+
+      masterList.forEach(item => {
+        const fn = item.src.split("/").pop();
+        const cap = item.caption || fn;
+        if (q && !fn.toLowerCase().includes(q) && !cap.toLowerCase().includes(q)) return;
+
+        const isInActive = activeList.some(x => x.src === item.src);
+
+        const row = document.createElement("div");
+        row.className = `item-row ${item.isFinale ? 'is-finale' : ''}`;
+
+        const thumb = document.createElement("img");
+        thumb.className = "item-thumb";
+        thumb.src = item.src;
+
+        const info = document.createElement("div");
+        info.className = "item-info";
+
+        let metaHtml = `<span style="color:var(--muted)">${fn}</span> `;
+        if (item.type === "video") {
+          metaHtml += `<span class="badge-video">🎬 Video (${item.duration || 20}s)</span>`;
+        } else {
+          metaHtml += `<span>Photo</span>`;
+        }
+
+        if (isInActive) {
+          metaHtml += ` • <strong style="color:var(--green)">✓ In Current List</strong>`;
+        }
+
+        info.innerHTML = `<div class="item-title" title="${cap}">${cap}</div><div class="item-meta">${metaHtml}</div>`;
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "btn-group";
+
+        if (!item.isFinale) {
+          if (isInActive) {
+            btnGroup.innerHTML = `<button class="btn btn-outline btn-sm" data-act="exclude">Exclude</button>`;
+            btnGroup.querySelector("button").onclick = () => removeItem(item);
+          } else {
+            btnGroup.innerHTML = `<button class="btn btn-gold btn-sm" data-act="add">+ Add</button>`;
+            btnGroup.querySelector("button").onclick = () => addItem(item);
+          }
+        } else {
+          btnGroup.innerHTML = `<span class="badge-finale">Locked Finale</span>`;
+        }
+
+        row.appendChild(thumb);
+        row.appendChild(info);
+        row.appendChild(btnGroup);
+        container.appendChild(row);
+      });
+    }
+
+    // Reordering & List Manipulation
+    function jumpItem(item, targetOneBased) {
+      let list = getActiveList();
+      const nonFin = list.filter(i => !i.isFinale);
+      const oldIdx = nonFin.findIndex(i => i.src === item.src);
+      if (oldIdx < 0) return;
+
+      const targetZeroBased = Math.max(0, Math.min(targetOneBased - 1, nonFin.length - 1));
+      const [moved] = nonFin.splice(oldIdx, 1);
+      nonFin.splice(targetZeroBased, 0, moved);
+
+      const finale = list.find(i => i.isFinale);
+      const combined = [...nonFin];
+      if (finale) combined.push(finale);
+
+      setActiveList(combined);
+      renderAll();
+    }
+
+    function stepItem(item, direction) {
+      const nonFin = getActiveList().filter(i => !i.isFinale);
+      const curIdx = nonFin.findIndex(i => i.src === item.src);
+      if (curIdx < 0) return;
+      jumpItem(item, curIdx + 1 + direction);
+    }
+
+    function removeItem(item) {
+      let list = getActiveList();
+      list = list.filter(i => i.src !== item.src);
+      setActiveList(list);
+      renderAll();
+    }
+
+    function addItem(item) {
+      let list = getActiveList();
+      if (list.some(i => i.src === item.src)) return;
+
+      const nonFin = list.filter(i => !i.isFinale);
+      const finale = list.find(i => i.isFinale);
+
+      nonFin.push({ ...item });
+      const combined = [...nonFin];
+      if (finale) combined.push(finale);
+
+      setActiveList(combined);
+      renderAll();
+    }
+
+    function renderAll() {
+      updateStats();
+      renderCuratedList();
+      renderPoolList();
+    }
+
+    // Tabs Switching
+    els.tabServiceBtn.onclick = () => {
+      activeTab = 'service';
+      els.tabServiceBtn.classList.add("active");
+      els.tabLongBtn.classList.remove("active");
+      renderAll();
+    };
+
+    els.tabLongBtn.onclick = () => {
+      activeTab = 'long';
+      els.tabLongBtn.classList.add("active");
+      els.tabServiceBtn.classList.remove("active");
+      renderAll();
+    };
+
+    // Pacing Input Change
+    els.pacingInput.oninput = (e) => {
+      const val = parseFloat(e.target.value) || 5.5;
+      if (activeTab === 'service') {
+        servicePacing = val;
+      } else {
+        longPacing = val;
+      }
+      updateStats();
+    };
+
+    // Search Inputs
+    els.leftSearch?.addEventListener("input", renderCuratedList);
+    els.poolSearch?.addEventListener("input", renderPoolList);
+
+    // Batch Add All to Long Show
+    els.btnAddAllLong.onclick = () => {
+      const nonFin = masterList.filter(i => !i.isFinale);
+      const fin = masterList.find(i => i.isFinale);
+      longShowPlaylist = [...nonFin];
+      if (fin) longShowPlaylist.push(fin);
+      renderAll();
+    };
+
+    // Save Action
+    els.btnSave.onclick = () => {
+      localStorage.setItem("BILL_SERVICE_PLAYLIST", JSON.stringify(servicePlaylist));
+      localStorage.setItem("BILL_LONG_PLAYLIST", JSON.stringify(longShowPlaylist));
+      localStorage.setItem("BILL_SERVICE_PHOTO_DURATION", servicePacing.toString());
+      localStorage.setItem("BILL_LONG_PHOTO_DURATION", longPacing.toString());
+
+      // Update legacy list with flags
+      const combinedMaster = masterList.map(item => ({
+        ...item,
+        inService: servicePlaylist.some(s => s.src === item.src),
+        inLongShow: longShowPlaylist.some(l => l.src === item.src)
+      }));
+      localStorage.setItem("BILL_SERVICE_CUSTOM_MEDIA", JSON.stringify(combinedMaster));
+
+      alert(`Saved to Browser!\n• 7-Min Service: ${servicePlaylist.length} slides (${servicePacing}s pacing)\n• Long Show: ${longShowPlaylist.length} slides (${longPacing}s pacing)`);
+    };
+
+    // Reset Action
+    els.btnReset.onclick = () => {
+      if (confirm("Reset curation? This restores default service and long show playlists from master media.")) {
+        localStorage.removeItem("BILL_SERVICE_PLAYLIST");
+        localStorage.removeItem("BILL_LONG_PLAYLIST");
+        localStorage.removeItem("BILL_SERVICE_CUSTOM_MEDIA");
+        localStorage.removeItem("BILL_SERVICE_PHOTO_DURATION");
+        localStorage.removeItem("BILL_LONG_PHOTO_DURATION");
+        window.location.reload();
+      }
+    };
+
+    // Export Action
+    els.btnExport.onclick = () => {
+      const exportList = masterList.map(item => ({
+        ...item,
+        inService: servicePlaylist.some(s => s.src === item.src),
+        inLongShow: longShowPlaylist.some(l => l.src === item.src)
+      }));
+
+      const fileContent = "// Bill Kockritz Master Media Registry\n" +
+        "// Curated with 7-Min Service and Long Show Playlists\n" +
+        "const MASTER_MEDIA_LIST = " + JSON.stringify(exportList, null, 2) + ";\n\n" +
+        "window.BILL_MEDIA = MASTER_MEDIA_LIST;\n" +
+        "window.BILL_MASTER_MEDIA = MASTER_MEDIA_LIST;\n";
+
+      const blob = new Blob([fileContent], { type: "application/javascript" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "media-data.js";
+      a.click();
+    };
+
+    // Initial render
+    renderAll();
+  })();
+  </script>
 </body>
 </html>
