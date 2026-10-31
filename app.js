@@ -70,12 +70,19 @@
   let currentIndex = 0;
   let isPlaying = true;
   let slideTimer = null;
-  let currentDuration = parseInt(speedSelect.value, 10);
+
+  // Read custom photo pacing from admin if saved (defaults to 5.5s)
+  const savedPacing = localStorage.getItem("BILL_SERVICE_PHOTO_DURATION");
+  if (savedPacing) {
+    const pacingMs = (parseFloat(savedPacing) * 1000).toString();
+    if (speedSelect) speedSelect.value = pacingMs;
+  }
+  let currentDuration = parseInt(speedSelect ? speedSelect.value : 5500, 10);
   let currentMode = "service";
 
   // Audio State
   let musicEnabled = false;
-  let activeMusicSource = "country"; // 'country' | 'spotify' | 'none'
+  let activeMusicSource = "country";
   let pendingMode = null;
   const shownInPrelude = new Set();
 
@@ -87,7 +94,6 @@
       return;
     }
 
-    // Default load to 7-min service presentation
     applyModeChange("service");
     buildArchiveGrid();
     bindEvents();
@@ -104,7 +110,7 @@
     return arr;
   }
 
-  // 1. Build 7-Minute Curated Service
+  // 1. Build 7-Minute Curated Service (Plays Full User-Curated Sequence)
   function build7MinServicePlaylist() {
     const finale = allMedia.find(m => m.isFinale);
     const curated = allMedia.filter(m => m.inService && !m.isFinale);
@@ -134,15 +140,15 @@
   function setMusicSource(source) {
     activeMusicSource = source;
     if (source === "country") {
-      tabCountryBtn.classList.add("active");
-      tabSpotifyBtn.classList.remove("active");
-      countrySection.classList.remove("hidden");
-      spotifySection.classList.add("hidden");
+      if (tabCountryBtn) tabCountryBtn.classList.add("active");
+      if (tabSpotifyBtn) tabSpotifyBtn.classList.remove("active");
+      if (countrySection) countrySection.classList.remove("hidden");
+      if (spotifySection) spotifySection.classList.add("hidden");
     } else if (source === "spotify") {
-      tabSpotifyBtn.classList.add("active");
-      tabCountryBtn.classList.remove("active");
-      spotifySection.classList.remove("hidden");
-      countrySection.classList.add("hidden");
+      if (tabSpotifyBtn) tabSpotifyBtn.classList.add("active");
+      if (tabCountryBtn) tabCountryBtn.classList.remove("active");
+      if (spotifySection) spotifySection.classList.remove("hidden");
+      if (countrySection) countrySection.classList.add("hidden");
     }
   }
 
@@ -152,15 +158,13 @@
 
     if (activeMusicSource === "country") {
       setMusicSource("country");
-      // Append autoplay if needed
-      if (!countryIframe.src.includes("autoplay=1")) {
+      if (countryIframe && !countryIframe.src.includes("autoplay=1")) {
         const separator = countryIframe.src.includes("?") ? "&" : "?";
         countryIframe.src = countryIframe.src + separator + "autoplay=1";
       }
     } else if (activeMusicSource === "spotify") {
       setMusicSource("spotify");
-      // Open drawer so the user can hit Spotify's play button (browser iframe security)
-      musicDrawer.classList.remove("hidden");
+      if (musicDrawer) musicDrawer.classList.remove("hidden");
     }
   }
 
@@ -168,9 +172,10 @@
     musicEnabled = false;
     updateAudioUI();
 
-    // Mute/pause YouTube iframe by posting message
     try {
-      countryIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+      if (countryIframe) {
+        countryIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+      }
     } catch (e) {}
   }
 
@@ -183,6 +188,7 @@
   }
 
   function updateAudioUI() {
+    if (!quickMusicIcon || !quickMusicBtn || !drawerToggleAudioBtn) return;
     if (musicEnabled) {
       quickMusicIcon.textContent = "🔊";
       quickMusicBtn.classList.add("music-active");
@@ -224,10 +230,9 @@
       wrap.appendChild(img);
       wrap.appendChild(quote);
       mediaSlot.appendChild(wrap);
-      captionText.textContent = "";
+      if (captionText) captionText.textContent = "";
     } else if (item.type === "video") {
-      // Auto-duck / pause background music during video
-      if (musicEnabled) {
+      if (musicEnabled && countryIframe) {
         try {
           countryIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
         } catch (e) {}
@@ -239,9 +244,8 @@
       video.controls = true;
       video.playsInline = true;
 
-      // Resume presentation and restore music when video completes
       video.onended = () => {
-        if (musicEnabled && activeMusicSource === "country") {
+        if (musicEnabled && activeMusicSource === "country" && countryIframe) {
           try {
             countryIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
           } catch (e) {}
@@ -250,7 +254,7 @@
       };
 
       mediaSlot.appendChild(video);
-      captionText.textContent = item.caption || "";
+      if (captionText) captionText.textContent = item.caption || "";
     } else {
       const img = document.createElement("img");
       img.src = item.src;
@@ -259,12 +263,14 @@
         if (img.src.endsWith(".JPG")) img.src = img.src.replace(".JPG", ".jpg");
       };
       mediaSlot.appendChild(img);
-      captionText.textContent = item.caption || "";
+      if (captionText) captionText.textContent = item.caption || "";
     }
 
-    counter.textContent = `${currentIndex + 1} / ${activePlaylist.length}`;
-    const pct = ((currentIndex + 1) / activePlaylist.length) * 100;
-    progressBar.style.width = `${pct}%`;
+    if (counter) counter.textContent = `${currentIndex + 1} / ${activePlaylist.length}`;
+    if (progressBar) {
+      const pct = ((currentIndex + 1) / activePlaylist.length) * 100;
+      progressBar.style.width = `${pct}%`;
+    }
   }
 
   // Slideshow Timer
@@ -296,7 +302,7 @@
 
   function togglePlayPause() {
     isPlaying = !isPlaying;
-    playPauseBtn.textContent = isPlaying ? "❚❚" : "▶";
+    if (playPauseBtn) playPauseBtn.textContent = isPlaying ? "❚❚" : "▶";
     if (isPlaying) startTimer();
     else clearTimeout(slideTimer);
   }
@@ -313,8 +319,8 @@
     if (mode === "prelude") title = "Walk-In (Prelude Slideshow)";
     if (mode === "postlude") title = "Walk-Out (Postlude Slideshow)";
 
-    promptSlideshowTitle.textContent = title;
-    musicPromptModal.classList.remove("hidden");
+    if (promptSlideshowTitle) promptSlideshowTitle.textContent = title;
+    if (musicPromptModal) musicPromptModal.classList.remove("hidden");
   }
 
   // Apply Mode
@@ -325,41 +331,43 @@
     [modePreludeBtn, modeServiceBtn, modePostludeBtn, modeArchiveBtn].forEach(b => b && b.classList.remove("active"));
 
     if (mode === "service") {
-      modeServiceBtn.classList.add("active");
-      presentationView.classList.remove("hidden");
-      archiveView.classList.add("hidden");
+      if (modeServiceBtn) modeServiceBtn.classList.add("active");
+      if (presentationView) presentationView.classList.remove("hidden");
+      if (archiveView) archiveView.classList.add("hidden");
       build7MinServicePlaylist();
-      speedSelect.value = "5500";
+      const saved = localStorage.getItem("BILL_SERVICE_PHOTO_DURATION");
+      if (speedSelect) speedSelect.value = saved ? (parseFloat(saved) * 1000).toString() : "5500";
     } else if (mode === "prelude") {
-      modePreludeBtn.classList.add("active");
-      presentationView.classList.remove("hidden");
-      archiveView.classList.add("hidden");
+      if (modePreludeBtn) modePreludeBtn.classList.add("active");
+      if (presentationView) presentationView.classList.remove("hidden");
+      if (archiveView) archiveView.classList.add("hidden");
       buildPreludePlaylist();
-      speedSelect.value = "6000";
+      if (speedSelect) speedSelect.value = "6000";
     } else if (mode === "postlude") {
-      modePostludeBtn.classList.add("active");
-      presentationView.classList.remove("hidden");
-      archiveView.classList.add("hidden");
+      if (modePostludeBtn) modePostludeBtn.classList.add("active");
+      if (presentationView) presentationView.classList.remove("hidden");
+      if (archiveView) archiveView.classList.add("hidden");
       buildPostludePlaylist();
-      speedSelect.value = "6000";
+      if (speedSelect) speedSelect.value = "6000";
     } else if (mode === "archive") {
-      modeArchiveBtn.classList.add("active");
-      presentationView.classList.add("hidden");
-      archiveView.classList.remove("hidden");
+      if (modeArchiveBtn) modeArchiveBtn.classList.add("active");
+      if (presentationView) presentationView.classList.add("hidden");
+      if (archiveView) archiveView.classList.remove("hidden");
       isPlaying = false;
-      playPauseBtn.textContent = "▶";
+      if (playPauseBtn) playPauseBtn.textContent = "▶";
       return;
     }
 
-    currentDuration = parseInt(speedSelect.value, 10);
+    currentDuration = parseInt(speedSelect ? speedSelect.value : 5500, 10);
     isPlaying = true;
-    playPauseBtn.textContent = "❚❚";
+    if (playPauseBtn) playPauseBtn.textContent = "❚❚";
     renderSlide(0);
     startTimer();
   }
 
   // Thumbnail Grid
   function buildArchiveGrid(filteredList = null) {
+    if (!archiveGrid) return;
     const list = filteredList || allMedia;
     archiveGrid.innerHTML = "";
 
@@ -400,8 +408,8 @@
       card.addEventListener("click", () => {
         activePlaylist = [item];
         currentIndex = 0;
-        presentationView.classList.remove("hidden");
-        archiveView.classList.add("hidden");
+        if (presentationView) presentationView.classList.remove("hidden");
+        if (archiveView) archiveView.classList.add("hidden");
         renderSlide(0);
       });
 
@@ -411,27 +419,33 @@
 
   // Events
   function bindEvents() {
-    prevBtn.addEventListener("click", prevSlide);
-    nextBtn.addEventListener("click", nextSlide);
-    playPauseBtn.addEventListener("click", togglePlayPause);
+    if (prevBtn) prevBtn.addEventListener("click", prevSlide);
+    if (nextBtn) nextBtn.addEventListener("click", nextSlide);
+    if (playPauseBtn) playPauseBtn.addEventListener("click", togglePlayPause);
 
-    speedSelect.addEventListener("change", (e) => {
-      currentDuration = parseInt(e.target.value, 10);
-      if (isPlaying) startTimer();
-    });
+    if (speedSelect) {
+      speedSelect.addEventListener("change", (e) => {
+        currentDuration = parseInt(e.target.value, 10);
+        if (isPlaying) startTimer();
+      });
+    }
 
-    progressTrack.addEventListener("click", (e) => {
-      const rect = progressTrack.getBoundingClientRect();
-      const clickPos = (e.clientX - rect.left) / rect.width;
-      const targetIndex = Math.floor(clickPos * activePlaylist.length);
-      renderSlide(targetIndex);
-      startTimer();
-    });
+    if (progressTrack) {
+      progressTrack.addEventListener("click", (e) => {
+        const rect = progressTrack.getBoundingClientRect();
+        const clickPos = (e.clientX - rect.left) / rect.width;
+        const targetIndex = Math.floor(clickPos * activePlaylist.length);
+        renderSlide(targetIndex);
+        startTimer();
+      });
+    }
 
-    fullscreenBtn.addEventListener("click", () => {
-      if (!document.fullscreenElement) stage.requestFullscreen().catch(() => {});
-      else document.exitFullscreen();
-    });
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) stage.requestFullscreen().catch(() => {});
+        else document.exitFullscreen();
+      });
+    }
 
     window.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
@@ -443,63 +457,76 @@
       }
     });
 
-    // Slideshow Mode Selectors with Music Prompt
-    modePreludeBtn.addEventListener("click", () => requestModeChange("prelude"));
-    modeServiceBtn.addEventListener("click", () => requestModeChange("service"));
-    modePostludeBtn.addEventListener("click", () => requestModeChange("postlude"));
-    modeArchiveBtn.addEventListener("click", () => requestModeChange("archive"));
+    if (modePreludeBtn) modePreludeBtn.addEventListener("click", () => requestModeChange("prelude"));
+    if (modeServiceBtn) modeServiceBtn.addEventListener("click", () => requestModeChange("service"));
+    if (modePostludeBtn) modePostludeBtn.addEventListener("click", () => requestModeChange("postlude"));
+    if (modeArchiveBtn) modeArchiveBtn.addEventListener("click", () => requestModeChange("archive"));
 
-    // Modal Music Choices
-    chooseCountryBtn.addEventListener("click", () => {
-      setMusicSource("country");
-      musicPromptModal.classList.add("hidden");
-      applyModeChange(pendingMode);
-      playMusic();
-    });
+    if (chooseCountryBtn) {
+      chooseCountryBtn.addEventListener("click", () => {
+        setMusicSource("country");
+        if (musicPromptModal) musicPromptModal.classList.add("hidden");
+        applyModeChange(pendingMode);
+        playMusic();
+      });
+    }
 
-    chooseSpotifyBtn.addEventListener("click", () => {
-      setMusicSource("spotify");
-      musicPromptModal.classList.add("hidden");
-      applyModeChange(pendingMode);
-      playMusic();
-    });
+    if (chooseSpotifyBtn) {
+      chooseSpotifyBtn.addEventListener("click", () => {
+        setMusicSource("spotify");
+        if (musicPromptModal) musicPromptModal.classList.add("hidden");
+        applyModeChange(pendingMode);
+        playMusic();
+      });
+    }
 
-    chooseNoneBtn.addEventListener("click", () => {
-      musicPromptModal.classList.add("hidden");
-      pauseMusic();
-      applyModeChange(pendingMode);
-    });
+    if (chooseNoneBtn) {
+      chooseNoneBtn.addEventListener("click", () => {
+        if (musicPromptModal) musicPromptModal.classList.add("hidden");
+        pauseMusic();
+        applyModeChange(pendingMode);
+      });
+    }
 
-    // Music Drawer & Controls
-    quickMusicBtn.addEventListener("click", toggleMusic);
-    drawerToggleAudioBtn.addEventListener("click", toggleMusic);
-    musicDrawerToggle.addEventListener("click", () => musicDrawer.classList.toggle("hidden"));
-    closeDrawerBtn.addEventListener("click", () => musicDrawer.classList.add("hidden"));
+    if (quickMusicBtn) quickMusicBtn.addEventListener("click", toggleMusic);
+    if (drawerToggleAudioBtn) drawerToggleAudioBtn.addEventListener("click", toggleMusic);
+    if (musicDrawerToggle && musicDrawer) {
+      musicDrawerToggle.addEventListener("click", () => musicDrawer.classList.toggle("hidden"));
+    }
+    if (closeDrawerBtn && musicDrawer) {
+      closeDrawerBtn.addEventListener("click", () => musicDrawer.classList.add("hidden"));
+    }
 
-    tabCountryBtn.addEventListener("click", () => setMusicSource("country"));
-    tabSpotifyBtn.addEventListener("click", () => setMusicSource("spotify"));
+    if (tabCountryBtn) tabCountryBtn.addEventListener("click", () => setMusicSource("country"));
+    if (tabSpotifyBtn) tabSpotifyBtn.addEventListener("click", () => setMusicSource("spotify"));
 
-    // Archive Search
-    archiveSearch.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      if (!q) {
-        buildArchiveGrid(allMedia);
-      } else {
-        const filtered = allMedia.filter(m => (m.caption || m.src).toLowerCase().includes(q));
-        buildArchiveGrid(filtered);
-      }
-    });
+    if (archiveSearch) {
+      archiveSearch.addEventListener("input", (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!q) {
+          buildArchiveGrid(allMedia);
+        } else {
+          const filtered = allMedia.filter(m => (m.caption || m.src).toLowerCase().includes(q));
+          buildArchiveGrid(filtered);
+        }
+      });
+    }
 
-    // Billism
-    billismBtn.addEventListener("click", () => {
-      const randomQuip = BILLISMS[Math.floor(Math.random() * BILLISMS.length)];
-      billismText.textContent = randomQuip;
-      billismModal.classList.remove("hidden");
-    });
-    billismCloseBtn.addEventListener("click", () => billismModal.classList.add("hidden"));
-    billismModal.addEventListener("click", (e) => {
-      if (e.target === billismModal) billismModal.classList.add("hidden");
-    });
+    if (billismBtn && billismModal && billismText) {
+      billismBtn.addEventListener("click", () => {
+        const randomQuip = BILLISMS[Math.floor(Math.random() * BILLISMS.length)];
+        billismText.textContent = randomQuip;
+        billismModal.classList.remove("hidden");
+      });
+    }
+    if (billismCloseBtn && billismModal) {
+      billismCloseBtn.addEventListener("click", () => billismModal.classList.add("hidden"));
+    }
+    if (billismModal) {
+      billismModal.addEventListener("click", (e) => {
+        if (e.target === billismModal) billismModal.classList.add("hidden");
+      });
+    }
   }
 
   window.addEventListener("DOMContentLoaded", init);

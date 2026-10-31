@@ -4,127 +4,444 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Curator Admin — Bill Kockritz Memorial Media</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #0b0e14; color: #f0f3f6; font-family: 'Plus Jakarta Sans', sans-serif; padding: 24px; }
-    .admin-container { max-width: 1400px; margin: 0 auto; }
-    .admin-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #232b3b; padding-bottom: 20px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-    .admin-title h1 { font-size: 1.5rem; }
-    .admin-title p { color: #8e9bb0; font-size: 0.88rem; }
-    .stats-bar { display: flex; gap: 20px; align-items: center; background: #161c27; padding: 12px 20px; border-radius: 10px; border: 1px solid #283347; }
-    .stat-pill { font-size: 0.85rem; color: #a2b1c6; }
-    .stat-pill strong { color: #f0c36d; font-size: 1.1rem; }
-    .admin-columns { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
-    @media (max-width: 992px) { .admin-columns { grid-template-columns: 1fr; } }
-    .admin-panel { background: #141a24; border: 1px solid #232b3b; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; height: 75vh; }
-    .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .panel-head h2 { font-size: 1.1rem; }
-    .panel-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-    .item-row { display: flex; align-items: center; gap: 12px; background: #1b2331; padding: 8px 12px; border-radius: 8px; border: 1px solid #283449; transition: all 0.15s ease; cursor: grab; }
-    .item-row:active { cursor: grabbing; }
-    .item-row.is-finale { border-color: #d4a34b; background: #261f14; }
-    .item-thumb { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #000; flex-shrink: 0; }
-    .item-info { flex: 1; min-width: 0; }
-    .item-info h4 { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .item-info p { font-size: 0.75rem; color: #8e9bb0; }
-    .item-actions { display: flex; gap: 6px; }
-    .btn-sm { padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; border: 1px solid #324058; background: #212c3f; color: #fff; }
-    .btn-sm:hover { background: #32425e; }
-    .btn-gold { background: #d4a34b; color: #111; font-weight: 700; border: none; }
-    .btn-gold:hover { background: #e2b768; }
-    .btn-danger { background: #a83232; border: none; color: #fff; }
+    :root {
+      --bg-primary: #0b0e14;
+      --bg-panel: #131822;
+      --bg-card: #1a2230;
+      --border: #283347;
+      --text: #f0f3f6;
+      --text-muted: #8e9bb0;
+      --gold: #e5b357;
+      --gold-dark: #b8862d;
+      --green: #7ee787;
+      --red: #ff7b72;
+      --blue: #58a6ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      padding: 20px 24px;
+      min-height: 100vh;
+    }
+
+    .admin-container { max-width: 1560px; margin: 0 auto; }
+
+    /* Top Command Header */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .admin-title h1 { font-size: 1.45rem; font-weight: 700; color: #fff; }
+    .admin-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Pacing & Target Stats Bar */
+    .stats-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      background: var(--bg-panel);
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-pill {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-pill strong { font-size: 1.05rem; color: var(--gold); }
+
+    .pacing-input {
+      width: 58px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .pacing-input:focus { border-color: var(--gold); }
+
+    .btn {
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .btn-gold { background: var(--gold); color: #111; font-weight: 700; }
+    .btn-gold:hover { background: #f0c36d; }
+    .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn-outline:hover { background: var(--bg-card); border-color: var(--text-muted); }
+    .btn-danger { background: #a83232; color: #fff; }
     .btn-danger:hover { background: #c53e3e; }
+
+    /* Columns Layout */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      height: calc(100vh - 130px);
+    }
+    @media (max-width: 1080px) {
+      .admin-grid { grid-template-columns: 1fr; height: auto; }
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .panel-head-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-head h2 { font-size: 1.1rem; color: #fff; }
+
+    .search-box {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--gold); }
+
+    .panel-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 6px;
+    }
+
+    /* List Rows */
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 0.15s ease;
+    }
+    .item-row:hover { border-color: #3f4e6b; }
+    .item-row.is-finale {
+      border-color: var(--gold);
+      background: #241d13;
+    }
+
+    .item-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #000;
+      flex-shrink: 0;
+    }
+
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-title {
+      font-size: 0.86rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+
+    .item-meta {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filename-code {
+      font-family: monospace;
+      color: #9ba7bd;
+      background: rgba(0,0,0,0.3);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    .badge-video {
+      background: #1f3659;
+      color: var(--blue);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .badge-finale {
+      background: rgba(229, 179, 87, 0.2);
+      color: var(--gold);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* Jump & Movement Actions */
+    .jump-box-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 4px;
+    }
+    .jump-box-wrap label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .jump-input {
+      width: 44px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 4px;
+      border-radius: 5px;
+      text-align: center;
+      outline: none;
+    }
+    .jump-input:focus { border-color: var(--gold); }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-icon {
+      background: #252f42;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-icon:hover { background: #33415c; border-color: var(--text-muted); color: #fff; }
   </style>
 </head>
 <body>
   <div class="admin-container">
-    <div class="admin-header">
+    <!-- Header Controls -->
+    <header class="admin-header">
       <div class="admin-title">
-        <h1>Memorial Media Curator & Admin</h1>
-        <p>Curate the exact order and content of the 7-minute service slideshow, and manage all 419 archive files.</p>
+        <h1>Memorial Presentation Curator</h1>
+        <p>Curate the exact order of the 7-minute service slideshow and search across all 419 archive media files.</p>
       </div>
-      <div class="stats-bar">
-        <div class="stat-pill">Service Items: <strong id="service-count">0</strong></div>
-        <div class="stat-pill">Est. Time: <strong id="est-time">0m 00s</strong> / 7m 00s</div>
-        <div class="stat-pill">Archive Pool: <strong id="archive-count">0</strong></div>
-        <button id="save-browser-btn" class="btn btn-primary">💾 Save to Browser</button>
-        <button id="export-js-btn" class="btn btn-outline">⬇️ Export media-data.js</button>
-        <a href="index.html" class="btn btn-outline">⬅️ Return to Website</a>
-      </div>
-    </div>
 
-    <div class="admin-columns">
-      <!-- Active 7-Minute Service List -->
-      <section class="admin-panel">
+      <div class="stats-bar">
+        <div class="stat-pill">
+          Photo Duration:
+          <input type="number" id="pacing-input" class="pacing-input" value="5.5" step="0.5" min="2" max="15" title="Seconds per photo" />
+          <span>sec</span>
+        </div>
+        <div class="stat-pill">Service Items: <strong id="service-count">0</strong></div>
+        <div class="stat-pill">Est. Time: <strong id="est-time">0m 00s</strong></div>
+        <div class="stat-pill" id="target-diff-pill"></div>
+        <button id="save-browser-btn" class="btn btn-gold">💾 Save to Browser</button>
+        <button id="export-js-btn" class="btn btn-outline">⬇️ Export media-data.js</button>
+        <a href="index.html" class="btn btn-outline">⬅️ Open Memorial Site</a>
+      </div>
+    </header>
+
+    <!-- Two Main Interactive Panels -->
+    <main class="admin-grid">
+      <!-- 7-Min Service Playlist Sequence -->
+      <section class="panel">
         <div class="panel-head">
-          <h2>⭐ 7-Minute Service Sequence (<span id="service-panel-count">0</span> items)</h2>
-          <small style="color: #f0c36d;">Drag rows or use arrows to set exact playback order</small>
+          <div class="panel-head-row">
+            <h2>⭐ 7-Minute Service Order (<span id="service-header-count">0</span>)</h2>
+            <small style="color: var(--gold);">Use order boxes or Top/Bottom buttons to sequence</small>
+          </div>
+          <input type="text" id="service-search" class="search-box" placeholder="Filter service list by filename or caption..." />
         </div>
         <div class="panel-list" id="service-list"></div>
       </section>
 
-      <!-- Complete 419 Master Archive Pool -->
-      <section class="admin-panel">
+      <!-- Complete 419 File Archive Pool -->
+      <section class="panel">
         <div class="panel-head">
-          <h2>🗂️ All 419 Files (Pool for Before & After Service)</h2>
-          <input type="text" id="pool-search" placeholder="Search archive..." style="padding: 6px 12px; background: #0e1219; border: 1px solid #283449; color: #fff; border-radius: 6px; font-size: 0.85rem;" />
+          <div class="panel-head-row">
+            <h2>🗂️ Master Archive Pool (<span id="pool-count">0</span>)</h2>
+            <small style="color: var(--text-muted);">Pool for Walk-In & Walk-Out</small>
+          </div>
+          <input type="text" id="pool-search" class="search-box" placeholder="Search by filename (e.g. '4Wheeler', '.PNG') or caption..." />
         </div>
         <div class="panel-list" id="pool-list"></div>
       </section>
-    </div>
+    </main>
   </div>
 
   <script src="media-data.js"></script>
   <script>
     (function() {
-      let master = [...(window.BILL_MASTER_MEDIA || [])];
+      const master = [...(window.BILL_MASTER_MEDIA || [])];
       let currentData = [...(window.BILL_MEDIA || master)];
+
+      // Load saved pacing or fallback to 5.5s
+      let photoDuration = parseFloat(localStorage.getItem("BILL_SERVICE_PHOTO_DURATION")) || 5.5;
+
+      const pacingInput = document.getElementById("pacing-input");
+      pacingInput.value = photoDuration;
 
       const serviceListEl = document.getElementById("service-list");
       const poolListEl = document.getElementById("pool-list");
       const serviceCountEl = document.getElementById("service-count");
-      const servicePanelCountEl = document.getElementById("service-panel-count");
-      const archiveCountEl = document.getElementById("archive-count");
+      const serviceHeaderCountEl = document.getElementById("service-header-count");
+      const poolCountEl = document.getElementById("pool-count");
       const estTimeEl = document.getElementById("est-time");
+      const targetDiffPill = document.getElementById("target-diff-pill");
+      const serviceSearch = document.getElementById("service-search");
       const poolSearch = document.getElementById("pool-search");
       const saveBtn = document.getElementById("save-browser-btn");
       const exportBtn = document.getElementById("export-js-btn");
 
-      function updateStats() {
+      // Calculate Running Time & Guide User into 7m ± 1m Window (6:00 - 8:00)
+      function updateCalculations() {
         const serviceItems = currentData.filter(i => i.inService);
         serviceCountEl.textContent = serviceItems.length;
-        servicePanelCountEl.textContent = serviceItems.length;
-        archiveCountEl.textContent = master.length;
+        serviceHeaderCountEl.textContent = serviceItems.length;
+        poolCountEl.textContent = master.length;
 
-        // Estimate playback: 5.5s per photo, plus video durations
+        // Sum video lengths + photo durations
         let totalSec = 0;
-        serviceItems.forEach(i => {
-          if (i.type === "video") totalSec += (i.duration || 20);
-          else totalSec += 5.5;
+        serviceItems.forEach(item => {
+          if (item.type === "video") {
+            totalSec += (item.duration || 20);
+          } else {
+            totalSec += photoDuration;
+          }
         });
 
         const mins = Math.floor(totalSec / 60);
-        const secs = Math.floor(totalSec % 60);
-        estTimeEl.textContent = `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
-        if (totalSec > 430) estTimeEl.style.color = "#ff7b72";
-        else estTimeEl.style.color = "#7ee787";
+        const secs = Math.round(totalSec % 60);
+        const timeFormatted = `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+        estTimeEl.textContent = `${timeFormatted} (Target: 7m ± 1m)`;
+
+        // 7 minutes = 420s. Target window is 360s (6m) to 480s (8m)
+        const minTargetSec = 360;
+        const maxTargetSec = 480;
+        const targetMidSec = 420;
+
+        if (totalSec >= minTargetSec && totalSec <= maxTargetSec) {
+          const offset = Math.round(totalSec - targetMidSec);
+          const offsetText = offset === 0 
+            ? "Exact 7:00 target!" 
+            : (offset > 0 ? `+${offset}s over 7:00` : `${Math.abs(offset)}s under 7:00`);
+
+          targetDiffPill.innerHTML = `
+            <span style="color: var(--green); background: rgba(126, 231, 135, 0.15); padding: 5px 12px; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              ✅ Perfect Service Window (${offsetText}) — Within 6:00 to 8:00 range
+            </span>
+          `;
+          estTimeEl.style.color = "var(--green)";
+        } else if (totalSec < minTargetSec) {
+          const secondsShort = Math.round(minTargetSec - totalSec);
+          const photosNeeded = Math.ceil(secondsShort / photoDuration);
+
+          targetDiffPill.innerHTML = `
+            <span style="color: var(--gold); background: rgba(229, 179, 87, 0.15); padding: 5px 12px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+              ⏳ A bit short (${timeFormatted}). Add ~${photosNeeded} more photo(s) or bump duration to reach the 6–8 min window.
+            </span>
+          `;
+          estTimeEl.style.color = "var(--gold)";
+        } else {
+          const secondsOver = Math.round(totalSec - maxTargetSec);
+          const photosToTrim = Math.ceil(secondsOver / photoDuration);
+
+          targetDiffPill.innerHTML = `
+            <span style="color: var(--red); background: rgba(255, 123, 114, 0.15); padding: 5px 12px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+              ⏱️ A bit long (${timeFormatted}). Trim ~${photosToTrim} photo(s) or lower duration to get under 8 mins.
+            </span>
+          `;
+          estTimeEl.style.color = "var(--red)";
+        }
       }
 
-      function render() {
-        updateStats();
-        renderServiceList();
-        renderPoolList();
+      function renderAll() {
+        updateCalculations();
+        renderServiceList(serviceSearch.value);
+        renderPoolList(poolSearch.value);
       }
 
-      function renderServiceList() {
+      // 1. Render Service List
+      function renderServiceList(filterQuery = "") {
         serviceListEl.innerHTML = "";
+        const query = (filterQuery || "").toLowerCase().trim();
         const serviceItems = currentData.filter(i => i.inService);
+        const nonFinaleCount = serviceItems.filter(i => !i.isFinale).length;
 
-        serviceItems.forEach((item, sIndex) => {
+        serviceItems.forEach((item, index) => {
+          const filename = (item.src || "").split("/").pop();
+          const caption = item.caption || filename;
+
+          if (query && !filename.toLowerCase().includes(query) && !caption.toLowerCase().includes(query)) {
+            return;
+          }
+
           const row = document.createElement("div");
           row.className = `item-row ${item.isFinale ? 'is-finale' : ''}`;
-          row.draggable = !item.isFinale;
 
           const thumb = document.createElement("img");
           thumb.className = "item-thumb";
@@ -134,30 +451,72 @@
 
           const info = document.createElement("div");
           info.className = "item-info";
-          info.innerHTML = `<h4>#${sIndex + 1} ${item.caption || item.src.split('/').pop()}</h4>
-                            <p>${item.type.toUpperCase()}${item.isFinale ? ' • 🔒 LOCKED FINALE' : ''}</p>`;
+
+          info.innerHTML = `
+            <div class="item-title">${caption}</div>
+            <div class="item-meta">
+              <span class="filename-code">${filename}</span>
+              ${item.type === "video" ? `<span class="badge-video">🎬 Video: ${item.duration || 20}s</span>` : `<span>${photoDuration}s photo</span>`}
+              ${item.isFinale ? `<span class="badge-finale">🔒 LOCKED FINALE</span>` : ''}
+            </div>
+          `;
 
           const actions = document.createElement("div");
-          actions.className = "item-actions";
+          actions.className = "btn-group";
 
           if (!item.isFinale) {
+            const jumpWrap = document.createElement("div");
+            jumpWrap.className = "jump-box-wrap";
+            jumpWrap.innerHTML = `
+              <label>#</label>
+              <input type="number" class="jump-input" value="${index + 1}" min="1" max="${nonFinaleCount}" title="Type number and hit Enter to jump" />
+            `;
+            const jumpInput = jumpWrap.querySelector("input");
+            jumpInput.addEventListener("change", (e) => {
+              const targetNum = parseInt(e.target.value, 10);
+              jumpToPosition(item, targetNum);
+            });
+            jumpInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                jumpInput.blur();
+              }
+            });
+
+            const topBtn = document.createElement("button");
+            topBtn.className = "btn-icon";
+            topBtn.title = "Move to Top (#1)";
+            topBtn.textContent = "⏮ Top";
+            topBtn.onclick = () => jumpToPosition(item, 1);
+
             const upBtn = document.createElement("button");
-            upBtn.className = "btn-sm";
+            upBtn.className = "btn-icon";
             upBtn.textContent = "▲";
-            upBtn.onclick = () => moveServiceItem(item, -1);
+            upBtn.title = "Move Up One";
+            upBtn.onclick = () => stepItem(item, -1);
 
             const downBtn = document.createElement("button");
-            downBtn.className = "btn-sm";
+            downBtn.className = "btn-icon";
             downBtn.textContent = "▼";
-            downBtn.onclick = () => moveServiceItem(item, 1);
+            downBtn.title = "Move Down One";
+            downBtn.onclick = () => stepItem(item, 1);
+
+            const btmBtn = document.createElement("button");
+            btmBtn.className = "btn-icon";
+            btmBtn.title = "Move to Bottom (Right before finale)";
+            btmBtn.textContent = "⏭ Bottom";
+            btmBtn.onclick = () => jumpToPosition(item, nonFinaleCount);
 
             const removeBtn = document.createElement("button");
-            removeBtn.className = "btn-sm btn-danger";
-            removeBtn.textContent = "Remove";
-            removeBtn.onclick = () => toggleInService(item, false);
+            removeBtn.className = "btn-icon btn-danger";
+            removeBtn.title = "Remove from Service Show (Keep in archive pool)";
+            removeBtn.textContent = "✕";
+            removeBtn.onclick = () => toggleItem(item, false);
 
+            actions.appendChild(jumpWrap);
+            actions.appendChild(topBtn);
             actions.appendChild(upBtn);
             actions.appendChild(downBtn);
+            actions.appendChild(btmBtn);
             actions.appendChild(removeBtn);
           }
 
@@ -168,14 +527,19 @@
         });
       }
 
-      function renderPoolList(filter = "") {
+      // 2. Render Archive Pool
+      function renderPoolList(filterQuery = "") {
         poolListEl.innerHTML = "";
-        const query = (filter || "").toLowerCase().trim();
+        const query = (filterQuery || "").toLowerCase().trim();
 
         master.forEach((item) => {
+          const filename = (item.src || "").split("/").pop();
+          const caption = item.caption || filename;
           const isCurrentlyIn = currentData.some(c => c.src === item.src && c.inService);
-          const caption = (item.caption || item.src.split('/').pop()).toLowerCase();
-          if (query && !caption.includes(query)) return;
+
+          if (query && !filename.toLowerCase().includes(query) && !caption.toLowerCase().includes(query)) {
+            return;
+          }
 
           const row = document.createElement("div");
           row.className = "item-row";
@@ -188,17 +552,25 @@
 
           const info = document.createElement("div");
           info.className = "item-info";
-          info.innerHTML = `<h4>${item.caption || item.src.split('/').pop()}</h4>
-                            <p>${item.type.toUpperCase()} • ${isCurrentlyIn ? '<span style="color:#7ee787">Included in Service</span>' : 'Archive Only'}</p>`;
+          info.innerHTML = `
+            <div class="item-title">${caption}</div>
+            <div class="item-meta">
+              <span class="filename-code">${filename}</span>
+              ${item.type === "video" ? `<span class="badge-video">🎬 Video: ${item.duration || 20}s</span>` : `<span>Photo</span>`}
+              <span>• ${isCurrentlyIn ? '<strong style="color:var(--green)">Included in Service</strong>' : 'Archive Only'}</span>
+            </div>
+          `;
 
           const actions = document.createElement("div");
-          actions.className = "item-actions";
+          actions.className = "btn-group";
 
           if (!item.isFinale) {
             const toggleBtn = document.createElement("button");
-            toggleBtn.className = `btn-sm ${isCurrentlyIn ? 'btn-danger' : 'btn-gold'}`;
-            toggleBtn.textContent = isCurrentlyIn ? "Exclude" : "Add to Service";
-            toggleBtn.onclick = () => toggleInService(item, !isCurrentlyIn);
+            toggleBtn.className = `btn ${isCurrentlyIn ? 'btn-outline' : 'btn-gold'}`;
+            toggleBtn.style.padding = "4px 10px";
+            toggleBtn.style.fontSize = "0.75rem";
+            toggleBtn.textContent = isCurrentlyIn ? "Exclude" : "+ Add to Service";
+            toggleBtn.onclick = () => toggleItem(item, !isCurrentlyIn);
             actions.appendChild(toggleBtn);
           }
 
@@ -209,46 +581,81 @@
         });
       }
 
-      function toggleInService(item, status) {
-        let existing = currentData.find(c => c.src === item.src);
-        if (existing) {
-          existing.inService = status;
-        } else {
-          currentData.push({ ...item, inService: status });
-        }
-        render();
-      }
-
-      function moveServiceItem(item, dir) {
+      // Reordering Logic: Jump to specific position
+      function jumpToPosition(item, targetOneBased) {
         const serviceItems = currentData.filter(i => i.inService && !i.isFinale);
-        const idx = serviceItems.findIndex(i => i.src === item.src);
-        if (idx < 0) return;
-        const targetIdx = idx + dir;
-        if (targetIdx < 0 || targetIdx >= serviceItems.length) return;
+        const oldIndex = serviceItems.findIndex(i => i.src === item.src);
+        if (oldIndex < 0) return;
 
-        const temp = serviceItems[idx];
-        serviceItems[idx] = serviceItems[targetIdx];
-        serviceItems[targetIdx] = temp;
+        let targetIndex = targetOneBased - 1;
+        if (targetIndex < 0) targetIndex = 0;
+        if (targetIndex >= serviceItems.length) targetIndex = serviceItems.length - 1;
+
+        const [movedItem] = serviceItems.splice(oldIndex, 1);
+        serviceItems.splice(targetIndex, 0, movedItem);
 
         const finale = currentData.find(i => i.isFinale);
         const unselected = currentData.filter(i => !i.inService);
         currentData = [...serviceItems, ...unselected];
         if (finale) currentData.push(finale);
 
-        render();
+        renderAll();
       }
 
+      function stepItem(item, delta) {
+        const serviceItems = currentData.filter(i => i.inService && !i.isFinale);
+        const idx = serviceItems.findIndex(i => i.src === item.src);
+        if (idx < 0) return;
+        jumpToPosition(item, (idx + 1) + delta);
+      }
+
+      function toggleItem(item, shouldBeInService) {
+        let match = currentData.find(c => c.src === item.src);
+        if (match) {
+          match.inService = shouldBeInService;
+        } else {
+          currentData.push({ ...item, inService: shouldBeInService });
+        }
+        renderAll();
+      }
+
+      pacingInput.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        if (val && val >= 1) {
+          photoDuration = val;
+          localStorage.setItem("BILL_SERVICE_PHOTO_DURATION", photoDuration.toString());
+          updateCalculations();
+          renderServiceList(serviceSearch.value);
+        }
+      });
+
+      serviceSearch.addEventListener("input", (e) => renderServiceList(e.target.value));
+      poolSearch.addEventListener("input", (e) => renderPoolList(e.target.value));
+
       saveBtn.onclick = () => {
+        let totalSec = 0;
+        currentData.filter(i => i.inService).forEach(item => {
+          totalSec += (item.type === "video" ? (item.duration || 20) : photoDuration);
+        });
+
         localStorage.setItem("BILL_SERVICE_CUSTOM_MEDIA", JSON.stringify(currentData));
-        alert("Saved! Your memorial website is now updated with this exact order and curation.");
+        localStorage.setItem("BILL_SERVICE_PHOTO_DURATION", photoDuration.toString());
+
+        if (totalSec >= 360 && totalSec <= 480) {
+          alert(`Saved! Your slideshow is right in the sweet spot (${Math.floor(totalSec/60)}m ${Math.round(totalSec%60)}s), ready for the service.`);
+        } else if (totalSec < 360) {
+          alert(`Saved! Note: At ${Math.floor(totalSec/60)}m ${Math.round(totalSec%60)}s, the slideshow is slightly under the 6–8 minute goal. You can keep adding photos whenever you're ready.`);
+        } else {
+          alert(`Saved! Note: At ${Math.floor(totalSec/60)}m ${Math.round(totalSec%60)}s, the slideshow is a bit over 8 minutes. You can trim a few photos or decrease the photo duration if you need it shorter.`);
+        }
       };
 
       exportBtn.onclick = () => {
-        const jsContent = "// Bill Kockritz Memorial Master Media Registry (Curated Export)\n" +
-                          "const MASTER_MEDIA_LIST = " + JSON.stringify(currentData, null, 2) + ";\n\n" +
-                          "window.BILL_MEDIA = MASTER_MEDIA_LIST;\n" +
-                          "window.BILL_MASTER_MEDIA = MASTER_MEDIA_LIST;\n";
-        const blob = new Blob([jsContent], { type: "application/javascript" });
+        const js = "// Bill Kockritz Master Media Registry (Curated Export)\n" +
+                   "const MASTER_MEDIA_LIST = " + JSON.stringify(currentData, null, 2) + ";\n\n" +
+                   "window.BILL_MEDIA = MASTER_MEDIA_LIST;\n" +
+                   "window.BILL_MASTER_MEDIA = MASTER_MEDIA_LIST;\n";
+        const blob = new Blob([js], { type: "application/javascript" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -257,9 +664,7 @@
         URL.revokeObjectURL(url);
       };
 
-      poolSearch.oninput = (e) => renderPoolList(e.target.value);
-
-      render();
+      renderAll();
     })();
   </script>
 </body>
