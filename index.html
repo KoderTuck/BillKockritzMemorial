@@ -23,24 +23,33 @@
       </div>
     </div>
 
-    <!-- Mode Selector & Quick Actions -->
+    <!-- Mode Selector: Before Service, 7-Min Service, After Service, Full Archive -->
     <div class="header-center">
       <div class="mode-toggle-group" role="tablist">
-        <button id="mode-presentation-btn" class="mode-btn active" role="tab" aria-selected="true">
-          <span class="icon">⏱️</span> 20-Min Service Mode
+        <button id="mode-prelude-btn" class="mode-btn" role="tab" title="Random pool of memories for guest arrival">
+          <span class="icon">🎲</span> Walk-In (Random)
         </button>
-        <button id="mode-archive-btn" class="mode-btn" role="tab" aria-selected="false">
-          <span class="icon">🖼️</span> Full Family Archive (<span id="archive-count">0</span>)
+        <button id="mode-service-btn" class="mode-btn active" role="tab" title="Curated 7-minute chronological presentation">
+          <span class="icon">⏱️</span> 7-Min Service
+        </button>
+        <button id="mode-postlude-btn" class="mode-btn" role="tab" title="Fresh pool of memories for mingling after service">
+          <span class="icon">✨</span> Walk-Out (Fresh)
+        </button>
+        <button id="mode-archive-btn" class="mode-btn" role="tab" title="Browse all 419 photos and videos">
+          <span class="icon">🖼️</span> All Media (<span id="archive-count">419</span>)
         </button>
       </div>
     </div>
 
     <div class="header-right">
+      <a href="admin.html" class="btn btn-outline" title="Curate service photos & order">
+        <span class="icon">⚙️</span> Curator Admin
+      </a>
       <button id="billism-btn" class="btn btn-outline" title="A spark of Bill's good-natured humor">
         <span class="icon">💡</span> Billism
       </button>
       <button id="music-drawer-toggle" class="btn btn-primary">
-        <span class="icon">🎵</span> Music Playlist
+        <span class="icon">🎵</span> Music
       </button>
     </div>
   </header>
@@ -51,7 +60,6 @@
       
       <!-- Slide Viewport -->
       <div class="slide-viewport" id="slide-viewport">
-        <!-- Rendered dynamically by app.js -->
         <div id="media-slot" class="media-slot"></div>
         <div id="slide-caption-overlay" class="slide-caption-overlay">
           <p id="slide-caption-text"></p>
@@ -64,7 +72,7 @@
           <button id="prev-btn" class="ctrl-btn" title="Previous (Left Arrow)">◀</button>
           <button id="play-pause-btn" class="ctrl-btn" title="Play / Pause (Spacebar)">❚❚</button>
           <button id="next-btn" class="ctrl-btn" title="Next (Right Arrow)">▶</button>
-          <span id="slide-counter" class="counter-display">1 / 160</span>
+          <span id="slide-counter" class="counter-display">1 / 65</span>
         </div>
 
         <div class="playback-center">
@@ -78,8 +86,69 @@
           <select id="speed-select" class="speed-select">
             <option value="4500">4.5s</option>
             <option value="5500" selected>5.5s (Service)</option>
-            <option value="7500">7.5s</option>
-            <option value="10000">10s</option>
+            <option value="7000">7.0s (Ambient)</option>
+            <option value="9000">9.0s</option>
           </select>
           <button id="fullscreen-btn" class="ctrl-btn" title="Toggle Fullscreen">⛶</button>
         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Full Photo Archive Grid View -->
+  <section id="archive-view" class="archive-container hidden">
+    <div class="archive-header">
+      <div>
+        <h2>Complete Media Archive (All 419 Files)</h2>
+        <p>Explore all the photos, outdoor adventures, 4-wheeler rides, and family memories.</p>
+      </div>
+      <div class="archive-search-wrap">
+        <input type="text" id="archive-search" placeholder="Search memories (e.g. 4-Wheeler, Seahawks, Janet)..." />
+      </div>
+    </div>
+
+    <div class="archive-grid" id="archive-grid"></div>
+  </section>
+
+  <!-- Floating Music Drawer (Spotify Embed & Local Audio Support) -->
+  <aside id="music-drawer" class="music-drawer hidden">
+    <div class="drawer-header">
+      <h3>🎶 Bill's Service Playlist</h3>
+      <button id="close-drawer-btn" class="close-btn">✕</button>
+    </div>
+    <div class="drawer-body">
+      <p class="drawer-help-text">Click the Spotify play button to play alongside slides:</p>
+      <div class="spotify-embed-container">
+        <iframe 
+          style="border-radius:12px" 
+          src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" 
+          width="100%" 
+          height="152" 
+          frameBorder="0" 
+          allowfullscreen="" 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy">
+        </iframe>
+      </div>
+      <div class="drawer-note">
+        <small>💡 Background audio automatically pauses whenever a video clip plays.</small>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Billism Popup Modal -->
+  <div id="billism-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-badge">Goofy Wisdom & Heart</div>
+      <blockquote id="billism-text">“Always check the firewood twice, wear the funny sombrero, and leave room for dessert.”</blockquote>
+      <div class="modal-actions">
+        <button id="billism-close-btn" class="btn btn-primary">Keep Smiling</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts in execution order -->
+  <script src="media-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

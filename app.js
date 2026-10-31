@@ -1,4 +1,4 @@
-// Bill Kockritz Memorial Application Engine
+// Bill Kockritz Memorial Application Engine (Smart Shuffler & Service Manager)
 
 (function () {
   // DOM References
@@ -17,8 +17,11 @@
 
   const presentationView = document.getElementById("presentation-view");
   const archiveView = document.getElementById("archive-view");
-  const modePresentationBtn = document.getElementById("mode-presentation-btn");
+  const modePreludeBtn = document.getElementById("mode-prelude-btn");
+  const modeServiceBtn = document.getElementById("mode-service-btn");
+  const modePostludeBtn = document.getElementById("mode-postlude-btn");
   const modeArchiveBtn = document.getElementById("mode-archive-btn");
+
   const archiveCount = document.getElementById("archive-count");
   const archiveGrid = document.getElementById("archive-grid");
   const archiveSearch = document.getElementById("archive-search");
@@ -32,67 +35,90 @@
   const billismText = document.getElementById("billism-text");
   const billismCloseBtn = document.getElementById("billism-close-btn");
 
-  // Humorous and heartfelt quips celebrating Bill
   const BILLISMS = [
     "“My life’s goal is to get to the end and hear Jesus say, well done, good and faithful servant!”",
     "“Why catch a small fish when there’s a trophy waiting out in the deep water?”",
     "“You’re never too old to take the 4-wheeler through the biggest mud puddle on the trail.”",
     "“There is no problem that campfire coffee and a good dog can’t improve.”",
-    "“Life is better when you’re wearing the big sombrero.”",
+    "“Life is always better when you’re wearing the big sombrero.”",
     "“Family first, faithful always, and never turn down second helpings.”",
     "“Go Seahawks!”"
   ];
 
   // State
   const allMedia = window.BILL_MEDIA || [];
-  let servicePlaylist = [];
+  let activePlaylist = [];
   let currentIndex = 0;
   let isPlaying = true;
   let slideTimer = null;
   let currentDuration = parseInt(speedSelect.value, 10);
+  let currentMode = "service"; // 'service' | 'prelude' | 'postlude' | 'archive'
 
-  // Initialize
+  // Non-repeating tracking set
+  const shownInPrelude = new Set();
+
   function init() {
-    archiveCount.textContent = allMedia.length;
-    buildServicePlaylist();
-    renderSlide(0);
-    startTimer();
+    if (archiveCount) archiveCount.textContent = allMedia.length;
+    
+    // Check if URL has #admin hash to redirect directly
+    if (window.location.hash === "#admin") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    setMode("service");
     buildArchiveGrid();
     bindEvents();
   }
 
-  // Create curated ~160 slide service list (includes videos and locked finale)
-  function buildServicePlaylist() {
+  // Fisher-Yates Shuffle
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // 1. Build 7-Minute Curated Service
+  function build7MinServicePlaylist() {
     const finale = allMedia.find(m => m.isFinale);
-    const regularItems = allMedia.filter(m => !m.isFinale);
+    const curated = allMedia.filter(m => m.inService && !m.isFinale);
+    activePlaylist = [...curated];
+    if (finale) activePlaylist.push(finale);
+  }
 
-    // Target ~155 regular photos/videos + finale
-    if (regularItems.length <= 160) {
-      servicePlaylist = [...regularItems];
-    } else {
-      const step = regularItems.length / 155;
-      servicePlaylist = [];
-      for (let i = 0; i < 155; i++) {
-        servicePlaylist.push(regularItems[Math.floor(i * step)]);
-      }
-    }
+  // 2. Build Walk-In (Prelude) Pool: Random photos from non-service pool
+  function buildPreludePlaylist() {
+    shownInPrelude.clear();
+    const pool = allMedia.filter(m => !m.isFinale && !m.inService);
+    const shuffled = shuffle(pool.length > 25 ? pool : allMedia.filter(m => !m.isFinale));
+    shuffled.forEach(item => shownInPrelude.add(item.src));
+    activePlaylist = shuffled;
+  }
 
-    if (finale) {
-      servicePlaylist.push(finale);
+  // 3. Build Walk-Out (Postlude) Pool: Random photos NOT shown in Walk-In
+  function buildPostludePlaylist() {
+    let unseen = allMedia.filter(m => !m.isFinale && !shownInPrelude.has(m.src));
+    if (unseen.length < 25) {
+      unseen = allMedia.filter(m => !m.isFinale);
     }
+    activePlaylist = shuffle(unseen);
   }
 
   // Render Slide
   function renderSlide(index) {
     if (index < 0) index = 0;
-    if (index >= servicePlaylist.length) index = 0;
+    if (index >= activePlaylist.length) index = 0;
     currentIndex = index;
 
-    const item = servicePlaylist[currentIndex];
+    const item = activePlaylist[currentIndex];
+    if (!item) return;
+
     mediaSlot.innerHTML = "";
 
     if (item.isFinale) {
-      // Special Finale Presentation with Glow & Verse
       const wrap = document.createElement("div");
       wrap.className = "finale-container";
 
@@ -109,14 +135,13 @@
       mediaSlot.appendChild(wrap);
       captionText.textContent = "";
     } else if (item.type === "video") {
-      // HTML5 Video Slide
       const video = document.createElement("video");
       video.src = item.src;
       video.autoplay = true;
       video.controls = true;
       video.playsInline = true;
 
-      // Smart Ducking: Resume timer and next slide when video ends
+      // Smart Ducking: Resume timer when video finishes
       video.onended = () => {
         nextSlide();
       };
@@ -124,29 +149,30 @@
       mediaSlot.appendChild(video);
       captionText.textContent = item.caption || "";
     } else {
-      // Standard Photo Slide
       const img = document.createElement("img");
       img.src = item.src;
-      img.alt = item.caption || "Memorial Photo";
+      img.alt = item.caption || "Memorial Moment";
+      img.onerror = () => {
+        // Fallback for case sensitivity or file extension
+        if (img.src.endsWith(".JPG")) img.src = img.src.replace(".JPG", ".jpg");
+      };
       mediaSlot.appendChild(img);
       captionText.textContent = item.caption || "";
     }
 
-    // Update Counter & Progress Bar
-    counter.textContent = `${currentIndex + 1} / ${servicePlaylist.length}`;
-    const pct = ((currentIndex + 1) / servicePlaylist.length) * 100;
+    counter.textContent = `${currentIndex + 1} / ${activePlaylist.length}`;
+    const pct = ((currentIndex + 1) / activePlaylist.length) * 100;
     progressBar.style.width = `${pct}%`;
   }
 
-  // Timer & Navigation
+  // Timer Pacing
   function startTimer() {
     clearTimeout(slideTimer);
     if (!isPlaying) return;
 
-    const currentItem = servicePlaylist[currentIndex];
+    const currentItem = activePlaylist[currentIndex];
     if (currentItem && currentItem.type === "video") {
-      // Let the video end handler advance the slide
-      return;
+      return; // Handled by video.onended
     }
 
     slideTimer = setTimeout(() => {
@@ -156,8 +182,8 @@
 
   function nextSlide() {
     let nextIdx = currentIndex + 1;
-    if (nextIdx >= servicePlaylist.length) {
-      nextIdx = 0; // Loop or hold at finale
+    if (nextIdx >= activePlaylist.length) {
+      nextIdx = 0;
     }
     renderSlide(nextIdx);
     startTimer();
@@ -165,7 +191,7 @@
 
   function prevSlide() {
     let prevIdx = currentIndex - 1;
-    if (prevIdx < 0) prevIdx = servicePlaylist.length - 1;
+    if (prevIdx < 0) prevIdx = activePlaylist.length - 1;
     renderSlide(prevIdx);
     startTimer();
   }
@@ -173,19 +199,57 @@
   function togglePlayPause() {
     isPlaying = !isPlaying;
     playPauseBtn.textContent = isPlaying ? "❚❚" : "▶";
-    if (isPlaying) {
-      startTimer();
-    } else {
-      clearTimeout(slideTimer);
-    }
+    if (isPlaying) startTimer();
+    else clearTimeout(slideTimer);
   }
 
-  // Archive Thumbnail Grid
+  // Mode Routing
+  function setMode(mode) {
+    clearTimeout(slideTimer);
+    currentMode = mode;
+
+    [modePreludeBtn, modeServiceBtn, modePostludeBtn, modeArchiveBtn].forEach(b => b && b.classList.remove("active"));
+
+    if (mode === "service") {
+      modeServiceBtn.classList.add("active");
+      presentationView.classList.remove("hidden");
+      archiveView.classList.add("hidden");
+      build7MinServicePlaylist();
+      speedSelect.value = "5500";
+    } else if (mode === "prelude") {
+      modePreludeBtn.classList.add("active");
+      presentationView.classList.remove("hidden");
+      archiveView.classList.add("hidden");
+      buildPreludePlaylist();
+      speedSelect.value = "6000";
+    } else if (mode === "postlude") {
+      modePostludeBtn.classList.add("active");
+      presentationView.classList.remove("hidden");
+      archiveView.classList.add("hidden");
+      buildPostludePlaylist();
+      speedSelect.value = "6000";
+    } else if (mode === "archive") {
+      modeArchiveBtn.classList.add("active");
+      presentationView.classList.add("hidden");
+      archiveView.classList.remove("hidden");
+      isPlaying = false;
+      playPauseBtn.textContent = "▶";
+      return;
+    }
+
+    currentDuration = parseInt(speedSelect.value, 10);
+    isPlaying = true;
+    playPauseBtn.textContent = "❚❚";
+    renderSlide(0);
+    startTimer();
+  }
+
+  // Archive Thumbnail Grid (All 419 Items)
   function buildArchiveGrid(filteredList = null) {
     const list = filteredList || allMedia;
     archiveGrid.innerHTML = "";
 
-    list.forEach((item, originalIndex) => {
+    list.forEach((item) => {
       const card = document.createElement("div");
       card.className = "archive-card";
 
@@ -199,30 +263,31 @@
         thumb.appendChild(badge);
 
         const videoPlaceholder = document.createElement("div");
-        videoPlaceholder.style.color = "#777";
-        videoPlaceholder.textContent = "🎬 Clip";
+        videoPlaceholder.style.color = "#8e9bb0";
+        videoPlaceholder.textContent = "🎬 Video Clip";
         thumb.appendChild(videoPlaceholder);
       } else {
         const img = document.createElement("img");
         img.src = item.src;
         img.loading = "lazy";
+        img.onerror = () => { img.style.opacity = "0.3"; };
         thumb.appendChild(img);
       }
 
       const info = document.createElement("div");
       info.className = "archive-card-info";
       const cap = document.createElement("p");
-      cap.textContent = item.caption || "Memorial Moment";
+      cap.textContent = item.caption || item.src.split("/").pop();
       info.appendChild(cap);
 
       card.appendChild(thumb);
       card.appendChild(info);
 
-      // Clicking any card loads it directly into the theater stage
       card.addEventListener("click", () => {
-        servicePlaylist = [item];
+        activePlaylist = [item];
         currentIndex = 0;
-        switchMode("presentation");
+        presentationView.classList.remove("hidden");
+        archiveView.classList.add("hidden");
         renderSlide(0);
       });
 
@@ -230,28 +295,7 @@
     });
   }
 
-  // Switch Between 20-Min Service Mode and Archive Mode
-  function switchMode(mode) {
-    if (mode === "presentation") {
-      presentationView.classList.remove("hidden");
-      archiveView.classList.add("hidden");
-      modePresentationBtn.classList.add("active");
-      modeArchiveBtn.classList.remove("active");
-      if (servicePlaylist.length <= 1) buildServicePlaylist();
-      renderSlide(currentIndex);
-      startTimer();
-    } else {
-      presentationView.classList.add("hidden");
-      archiveView.classList.remove("hidden");
-      modePresentationBtn.classList.remove("active");
-      modeArchiveBtn.classList.add("active");
-      clearTimeout(slideTimer);
-      isPlaying = false;
-      playPauseBtn.textContent = "▶";
-    }
-  }
-
-  // Event Handlers
+  // Bind Event Listeners
   function bindEvents() {
     prevBtn.addEventListener("click", prevSlide);
     nextBtn.addEventListener("click", nextSlide);
@@ -265,20 +309,16 @@
     progressTrack.addEventListener("click", (e) => {
       const rect = progressTrack.getBoundingClientRect();
       const clickPos = (e.clientX - rect.left) / rect.width;
-      const targetIndex = Math.floor(clickPos * servicePlaylist.length);
+      const targetIndex = Math.floor(clickPos * activePlaylist.length);
       renderSlide(targetIndex);
       startTimer();
     });
 
     fullscreenBtn.addEventListener("click", () => {
-      if (!document.fullscreenElement) {
-        stage.requestFullscreen().catch(err => alert(err.message));
-      } else {
-        document.exitFullscreen();
-      }
+      if (!document.fullscreenElement) stage.requestFullscreen().catch(() => {});
+      else document.exitFullscreen();
     });
 
-    // Keyboard Shortcuts (Arrow Keys & Space)
     window.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
       if (e.key === "ArrowRight") nextSlide();
@@ -289,43 +329,34 @@
       }
     });
 
-    // Mode Buttons
-    modePresentationBtn.addEventListener("click", () => switchMode("presentation"));
-    modeArchiveBtn.addEventListener("click", () => switchMode("archive"));
+    modePreludeBtn.addEventListener("click", () => setMode("prelude"));
+    modeServiceBtn.addEventListener("click", () => setMode("service"));
+    modePostludeBtn.addEventListener("click", () => setMode("postlude"));
+    modeArchiveBtn.addEventListener("click", () => setMode("archive"));
 
-    // Archive Search
     archiveSearch.addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase().trim();
       if (!q) {
         buildArchiveGrid(allMedia);
       } else {
-        const filtered = allMedia.filter(m => (m.caption || "").toLowerCase().includes(q));
+        const filtered = allMedia.filter(m => (m.caption || m.src).toLowerCase().includes(q));
         buildArchiveGrid(filtered);
       }
     });
 
-    // Music Drawer Toggle
-    musicDrawerToggle.addEventListener("click", () => {
-      musicDrawer.classList.toggle("hidden");
-    });
-    closeDrawerBtn.addEventListener("click", () => {
-      musicDrawer.classList.add("hidden");
-    });
+    musicDrawerToggle.addEventListener("click", () => musicDrawer.classList.toggle("hidden"));
+    closeDrawerBtn.addEventListener("click", () => musicDrawer.classList.add("hidden"));
 
-    // Billism Modal
     billismBtn.addEventListener("click", () => {
       const randomQuip = BILLISMS[Math.floor(Math.random() * BILLISMS.length)];
       billismText.textContent = randomQuip;
       billismModal.classList.remove("hidden");
     });
-    billismCloseBtn.addEventListener("click", () => {
-      billismModal.classList.add("hidden");
-    });
+    billismCloseBtn.addEventListener("click", () => billismModal.classList.add("hidden"));
     billismModal.addEventListener("click", (e) => {
       if (e.target === billismModal) billismModal.classList.add("hidden");
     });
   }
 
-  // Run on page load
   window.addEventListener("DOMContentLoaded", init);
 })();

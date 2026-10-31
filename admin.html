@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curator Admin — Bill Kockritz Memorial Media</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { background-color: #0b0e14; color: #f0f3f6; font-family: 'Plus Jakarta Sans', sans-serif; padding: 24px; }
+    .admin-container { max-width: 1400px; margin: 0 auto; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #232b3b; padding-bottom: 20px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .admin-title h1 { font-size: 1.5rem; }
+    .admin-title p { color: #8e9bb0; font-size: 0.88rem; }
+    .stats-bar { display: flex; gap: 20px; align-items: center; background: #161c27; padding: 12px 20px; border-radius: 10px; border: 1px solid #283347; }
+    .stat-pill { font-size: 0.85rem; color: #a2b1c6; }
+    .stat-pill strong { color: #f0c36d; font-size: 1.1rem; }
+    .admin-columns { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
+    @media (max-width: 992px) { .admin-columns { grid-template-columns: 1fr; } }
+    .admin-panel { background: #141a24; border: 1px solid #232b3b; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; height: 75vh; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .panel-head h2 { font-size: 1.1rem; }
+    .panel-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+    .item-row { display: flex; align-items: center; gap: 12px; background: #1b2331; padding: 8px 12px; border-radius: 8px; border: 1px solid #283449; transition: all 0.15s ease; cursor: grab; }
+    .item-row:active { cursor: grabbing; }
+    .item-row.is-finale { border-color: #d4a34b; background: #261f14; }
+    .item-thumb { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #000; flex-shrink: 0; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-info h4 { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .item-info p { font-size: 0.75rem; color: #8e9bb0; }
+    .item-actions { display: flex; gap: 6px; }
+    .btn-sm { padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; border: 1px solid #324058; background: #212c3f; color: #fff; }
+    .btn-sm:hover { background: #32425e; }
+    .btn-gold { background: #d4a34b; color: #111; font-weight: 700; border: none; }
+    .btn-gold:hover { background: #e2b768; }
+    .btn-danger { background: #a83232; border: none; color: #fff; }
+    .btn-danger:hover { background: #c53e3e; }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <div class="admin-title">
+        <h1>Memorial Media Curator & Admin</h1>
+        <p>Curate the exact order and content of the 7-minute service slideshow, and manage all 419 archive files.</p>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-pill">Service Items: <strong id="service-count">0</strong></div>
+        <div class="stat-pill">Est. Time: <strong id="est-time">0m 00s</strong> / 7m 00s</div>
+        <div class="stat-pill">Archive Pool: <strong id="archive-count">0</strong></div>
+        <button id="save-browser-btn" class="btn btn-primary">💾 Save to Browser</button>
+        <button id="export-js-btn" class="btn btn-outline">⬇️ Export media-data.js</button>
+        <a href="index.html" class="btn btn-outline">⬅️ Return to Website</a>
+      </div>
+    </div>
+
+    <div class="admin-columns">
+      <!-- Active 7-Minute Service List -->
+      <section class="admin-panel">
+        <div class="panel-head">
+          <h2>⭐ 7-Minute Service Sequence (<span id="service-panel-count">0</span> items)</h2>
+          <small style="color: #f0c36d;">Drag rows or use arrows to set exact playback order</small>
+        </div>
+        <div class="panel-list" id="service-list"></div>
+      </section>
+
+      <!-- Complete 419 Master Archive Pool -->
+      <section class="admin-panel">
+        <div class="panel-head">
+          <h2>🗂️ All 419 Files (Pool for Before & After Service)</h2>
+          <input type="text" id="pool-search" placeholder="Search archive..." style="padding: 6px 12px; background: #0e1219; border: 1px solid #283449; color: #fff; border-radius: 6px; font-size: 0.85rem;" />
+        </div>
+        <div class="panel-list" id="pool-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="media-data.js"></script>
+  <script>
+    (function() {
+      let master = [...(window.BILL_MASTER_MEDIA || [])];
+      let currentData = [...(window.BILL_MEDIA || master)];
+
+      const serviceListEl = document.getElementById("service-list");
+      const poolListEl = document.getElementById("pool-list");
+      const serviceCountEl = document.getElementById("service-count");
+      const servicePanelCountEl = document.getElementById("service-panel-count");
+      const archiveCountEl = document.getElementById("archive-count");
+      const estTimeEl = document.getElementById("est-time");
+      const poolSearch = document.getElementById("pool-search");
+      const saveBtn = document.getElementById("save-browser-btn");
+      const exportBtn = document.getElementById("export-js-btn");
+
+      function updateStats() {
+        const serviceItems = currentData.filter(i => i.inService);
+        serviceCountEl.textContent = serviceItems.length;
+        servicePanelCountEl.textContent = serviceItems.length;
+        archiveCountEl.textContent = master.length;
+
+        // Estimate playback: 5.5s per photo, plus video durations
+        let totalSec = 0;
+        serviceItems.forEach(i => {
+          if (i.type === "video") totalSec += (i.duration || 20);
+          else totalSec += 5.5;
+        });
+
+        const mins = Math.floor(totalSec / 60);
+        const secs = Math.floor(totalSec % 60);
+        estTimeEl.textContent = `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+        if (totalSec > 430) estTimeEl.style.color = "#ff7b72";
+        else estTimeEl.style.color = "#7ee787";
+      }
+
+      function render() {
+        updateStats();
+        renderServiceList();
+        renderPoolList();
+      }
+
+      function renderServiceList() {
+        serviceListEl.innerHTML = "";
+        const serviceItems = currentData.filter(i => i.inService);
+
+        serviceItems.forEach((item, sIndex) => {
+          const row = document.createElement("div");
+          row.className = `item-row ${item.isFinale ? 'is-finale' : ''}`;
+          row.draggable = !item.isFinale;
+
+          const thumb = document.createElement("img");
+          thumb.className = "item-thumb";
+          thumb.src = item.src;
+          thumb.loading = "lazy";
+          thumb.onerror = () => { thumb.style.display = "none"; };
+
+          const info = document.createElement("div");
+          info.className = "item-info";
+          info.innerHTML = `<h4>#${sIndex + 1} ${item.caption || item.src.split('/').pop()}</h4>
+                            <p>${item.type.toUpperCase()}${item.isFinale ? ' • 🔒 LOCKED FINALE' : ''}</p>`;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          if (!item.isFinale) {
+            const upBtn = document.createElement("button");
+            upBtn.className = "btn-sm";
+            upBtn.textContent = "▲";
+            upBtn.onclick = () => moveServiceItem(item, -1);
+
+            const downBtn = document.createElement("button");
+            downBtn.className = "btn-sm";
+            downBtn.textContent = "▼";
+            downBtn.onclick = () => moveServiceItem(item, 1);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "btn-sm btn-danger";
+            removeBtn.textContent = "Remove";
+            removeBtn.onclick = () => toggleInService(item, false);
+
+            actions.appendChild(upBtn);
+            actions.appendChild(downBtn);
+            actions.appendChild(removeBtn);
+          }
+
+          row.appendChild(thumb);
+          row.appendChild(info);
+          row.appendChild(actions);
+          serviceListEl.appendChild(row);
+        });
+      }
+
+      function renderPoolList(filter = "") {
+        poolListEl.innerHTML = "";
+        const query = (filter || "").toLowerCase().trim();
+
+        master.forEach((item) => {
+          const isCurrentlyIn = currentData.some(c => c.src === item.src && c.inService);
+          const caption = (item.caption || item.src.split('/').pop()).toLowerCase();
+          if (query && !caption.includes(query)) return;
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+
+          const thumb = document.createElement("img");
+          thumb.className = "item-thumb";
+          thumb.src = item.src;
+          thumb.loading = "lazy";
+          thumb.onerror = () => { thumb.style.display = "none"; };
+
+          const info = document.createElement("div");
+          info.className = "item-info";
+          info.innerHTML = `<h4>${item.caption || item.src.split('/').pop()}</h4>
+                            <p>${item.type.toUpperCase()} • ${isCurrentlyIn ? '<span style="color:#7ee787">Included in Service</span>' : 'Archive Only'}</p>`;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          if (!item.isFinale) {
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = `btn-sm ${isCurrentlyIn ? 'btn-danger' : 'btn-gold'}`;
+            toggleBtn.textContent = isCurrentlyIn ? "Exclude" : "Add to Service";
+            toggleBtn.onclick = () => toggleInService(item, !isCurrentlyIn);
+            actions.appendChild(toggleBtn);
+          }
+
+          row.appendChild(thumb);
+          row.appendChild(info);
+          row.appendChild(actions);
+          poolListEl.appendChild(row);
+        });
+      }
+
+      function toggleInService(item, status) {
+        let existing = currentData.find(c => c.src === item.src);
+        if (existing) {
+          existing.inService = status;
+        } else {
+          currentData.push({ ...item, inService: status });
+        }
+        render();
+      }
+
+      function moveServiceItem(item, dir) {
+        const serviceItems = currentData.filter(i => i.inService && !i.isFinale);
+        const idx = serviceItems.findIndex(i => i.src === item.src);
+        if (idx < 0) return;
+        const targetIdx = idx + dir;
+        if (targetIdx < 0 || targetIdx >= serviceItems.length) return;
+
+        const temp = serviceItems[idx];
+        serviceItems[idx] = serviceItems[targetIdx];
+        serviceItems[targetIdx] = temp;
+
+        const finale = currentData.find(i => i.isFinale);
+        const unselected = currentData.filter(i => !i.inService);
+        currentData = [...serviceItems, ...unselected];
+        if (finale) currentData.push(finale);
+
+        render();
+      }
+
+      saveBtn.onclick = () => {
+        localStorage.setItem("BILL_SERVICE_CUSTOM_MEDIA", JSON.stringify(currentData));
+        alert("Saved! Your memorial website is now updated with this exact order and curation.");
+      };
+
+      exportBtn.onclick = () => {
+        const jsContent = "// Bill Kockritz Memorial Master Media Registry (Curated Export)\n" +
+                          "const MASTER_MEDIA_LIST = " + JSON.stringify(currentData, null, 2) + ";\n\n" +
+                          "window.BILL_MEDIA = MASTER_MEDIA_LIST;\n" +
+                          "window.BILL_MASTER_MEDIA = MASTER_MEDIA_LIST;\n";
+        const blob = new Blob([jsContent], { type: "application/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "media-data.js";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      poolSearch.oninput = (e) => renderPoolList(e.target.value);
+
+      render();
+    })();
+  </script>
+</body>
+</html>
