@@ -264,7 +264,7 @@
       wrap.appendChild(quote);
       mediaSlot.appendChild(wrap);
       if (captionText) captionText.textContent = "";
-    } else if (item.type === "video") {
+	} else if (item.type === "video") {
       // Duck background music for video
       if (musicEnabled) {
         sendYouTubeCommand("pauseVideo");
@@ -276,8 +276,8 @@
       video.controls = true;
       video.playsInline = true;
 
-      // Match sound level with streaming music
-      video.volume = VIDEO_TARGET_VOLUME;
+      // Apply individual calibrated volume balance (defaults to 0.55 if unset)
+      video.volume = (item.volume !== undefined) ? item.volume : VIDEO_TARGET_VOLUME;
 
       video.onended = () => {
         // Restore music after video completes
