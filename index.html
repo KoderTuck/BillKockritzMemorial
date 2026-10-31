@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Celebrating Bill Kockritz — Faithful Servant & Joyful Heart</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,8 +35,8 @@
         <button id="mode-postlude-btn" class="mode-btn" role="tab" title="Fresh pool of memories for mingling after service">
           <span class="icon">✨</span> Walk-Out (Fresh)
         </button>
-        <button id="mode-archive-btn" class="mode-btn" role="tab" title="Browse all 419 photos and videos">
-          <span class="icon">🖼️</span> All Media (<span id="archive-count">419</span>)
+        <button id="mode-archive-btn" class="mode-btn" role="tab" title="Browse all photos and videos">
+          <span class="icon">🖼️</span> All Media (<span id="archive-count">0</span>)
         </button>
       </div>
     </div>
@@ -61,7 +61,9 @@
       <!-- Slide Viewport -->
       <div class="slide-viewport" id="slide-viewport">
         <div id="media-slot" class="media-slot"></div>
-        <!-- Caption Overlay Removed Per Request -->
+        <div id="slide-caption-overlay" class="slide-caption-overlay">
+          <p id="slide-caption-text"></p>
+        </div>
       </div>
 
       <!-- Playback Controls Bar -->
@@ -70,7 +72,7 @@
           <button id="prev-btn" class="ctrl-btn" title="Previous (Left Arrow)">◀</button>
           <button id="play-pause-btn" class="ctrl-btn" title="Play / Pause (Spacebar)">❚❚</button>
           <button id="next-btn" class="ctrl-btn" title="Next (Right Arrow)">▶</button>
-          <span id="slide-counter" class="counter-display">1 / 65</span>
+          <span id="slide-counter" class="counter-display">1 / --</span>
         </div>
 
         <div class="playback-center">
@@ -79,7 +81,7 @@
           </div>
         </div>
 
-        <!-- Music On/Off quick-toggle & slideshow pacing -->
+        <!-- Music quick toggle & slideshow pacing -->
         <div class="playback-right">
           <button id="quick-music-btn" class="ctrl-btn music-ctrl-btn" title="Toggle Background Music On/Off">
             <span id="quick-music-icon">🔇</span>
@@ -103,7 +105,7 @@
   <section id="archive-view" class="archive-container hidden">
     <div class="archive-header">
       <div>
-        <h2>Complete Media Archive (All 419 Files)</h2>
+        <h2>Complete Media Archive</h2>
         <p>Explore all the photos, outdoor adventures, 4-wheeler rides, and family memories.</p>
       </div>
       <div class="archive-search-wrap">
@@ -114,43 +116,6 @@
     <div class="archive-grid" id="archive-grid"></div>
   </section>
 
-  <!-- Interactive Music Prompt Modal (When Slideshow Is Chosen) -->
-  <div id="music-prompt-modal" class="modal-overlay hidden">
-    <div class="modal-card music-prompt-card">
-      <div class="modal-badge">Background Music Selection</div>
-      <h3 id="prompt-slideshow-title" style="margin-bottom: 8px;">Start Slideshow</h3>
-      <p style="color: #9ba5b5; font-size: 0.9rem; margin-bottom: 20px;">
-        Would you like background music to accompany this presentation?
-      </p>
-
-      <div class="music-choice-grid">
-        <button id="choose-country-btn" class="music-choice-btn">
-          <div class="choice-icon">🎸</div>
-          <div class="choice-content">
-            <strong>Country Guitar Instrumental</strong>
-            <small>Acoustic and steel guitar country tracks</small>
-          </div>
-        </button>
-
-        <button id="choose-spotify-btn" class="music-choice-btn">
-          <div class="choice-icon">🎧</div>
-          <div class="choice-content">
-            <strong>Spotify Service Playlist</strong>
-            <small>Bill's curated memorial song collection</small>
-          </div>
-        </button>
-
-        <button id="choose-none-btn" class="music-choice-btn btn-muted-choice">
-          <div class="choice-icon">🔇</div>
-          <div class="choice-content">
-            <strong>No Music (Silent Slideshow)</strong>
-            <small>Advance slides without background audio</small>
-          </div>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- Music Drawer / Player Controls Drawer -->
   <aside id="music-drawer" class="music-drawer hidden">
     <div class="drawer-header">
@@ -159,30 +124,30 @@
     </div>
     
     <div class="drawer-body">
-      <!-- Active player source tabs -->
+      <!-- Active player source selector tabs -->
       <div class="music-tabs">
-        <button id="tab-country-btn" class="music-tab-btn active">🎸 Country Instrumental</button>
+        <button id="tab-country-btn" class="music-tab-btn active">🎸 Guitar Instrumental</button>
         <button id="tab-spotify-btn" class="music-tab-btn">🟢 Spotify Playlist</button>
       </div>
 
-      <!-- Container for Country Guitar Stream -->
+      <!-- YouTube Guitar Stream Panel -->
       <div id="country-player-section" class="player-panel">
-        <p class="drawer-help-text">Country Guitar Instrumental stream for prelude, service, and postlude:</p>
-        <div class="video-embed-wrapper">
-          <iframe 
-            id="country-music-iframe"
-            width="100%" 
-            height="180" 
-            src="https://www.youtube-nocookie.com/embed/videoseries?list=PL3-Un4HK3geaEeVm19K7d59b2H6u5mF6d&enablejsapi=1" 
-            title="Country Music Guitar Instrumental Playlist" 
-            frameborder="0" 
-            allow="autoplay; encrypted-media; picture-in-picture" 
-            allowfullscreen>
-          </iframe>
+        <div class="audio-status-card">
+          <div class="status-indicator-row">
+            <span class="status-dot" id="guitar-status-dot"></span>
+            <strong id="guitar-status-text">Ready to stream</strong>
+          </div>
+          <p class="status-desc">
+            Plays YouTube acoustic guitar instrumental directly in the background. Audio will automatically pause whenever slide video clips play.
+          </p>
+        </div>
+        <div class="panel-btn-row">
+          <button id="play-country-btn" class="btn btn-primary" style="flex:1;">▶ Play Guitar</button>
+          <button id="pause-country-btn" class="btn btn-outline" style="flex:1;">❚❚ Pause</button>
         </div>
       </div>
 
-      <!-- Container for Spotify Embed -->
+      <!-- Spotify Embed Panel -->
       <div id="spotify-player-section" class="player-panel hidden">
         <p class="drawer-help-text">Press play below on Spotify to stream Bill's memorial playlist:</p>
         <div class="spotify-embed-container">
@@ -202,12 +167,12 @@
 
       <!-- Global Audio State Switch -->
       <div class="drawer-toggle-row">
-        <span>Background Audio Status:</span>
+        <span>Master Background Audio:</span>
         <button id="drawer-toggle-audio-btn" class="btn btn-sm btn-outline">Turn Music On</button>
       </div>
 
       <div class="drawer-note">
-        <small>💡 Background audio automatically pauses whenever a video clip plays, and resumes right after.</small>
+        <small>💡 Background audio automatically ducks (pauses) whenever video clips play on the slides.</small>
       </div>
     </div>
   </aside>
@@ -223,11 +188,21 @@
     </div>
   </div>
 
-  <!-- Modular Scripts -->
+  <!-- Persistent YouTube Background Player (Hidden from view, never paused by drawer toggling) -->
+  <div id="youtube-audio-host" style="position:fixed; left:-9999px; top:-9999px; width:200px; height:200px; opacity:0.001; pointer-events:none; z-index:-9999;">
+    <iframe 
+      id="country-music-iframe"
+      width="200" 
+      height="200" 
+      src="https://www.youtube-nocookie.com/embed/6YdIHC4np98?enablejsapi=1&version=3&loop=1&playlist=6YdIHC4np98&playsinline=1" 
+      title="Guitar Instrumental Audio" 
+      frameborder="0" 
+      allow="autoplay; encrypted-media">
+    </iframe>
+  </div>
+
+  <!-- Scripts in execution order -->
   <script src="media-data.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/audio-manager.js"></script>
-  <script src="js/archive.js"></script>
-  <script src="js/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
