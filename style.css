@@ -246,6 +246,7 @@ body {
 
 /* Caption Overlay */
 .slide-caption-overlay {
+  display: none !important;
   position: absolute;
   bottom: 0;
   left: 0;
