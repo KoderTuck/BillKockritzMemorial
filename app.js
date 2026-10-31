@@ -1,4 +1,4 @@
-// Bill Kockritz Memorial Application Engine (Smart Shuffler & Service Manager)
+// Bill Kockritz Memorial Application Engine (Smart Shuffler, Dual Music & Non-Repeating Pools)
 
 (function () {
   // DOM References
@@ -26,10 +26,29 @@
   const archiveGrid = document.getElementById("archive-grid");
   const archiveSearch = document.getElementById("archive-search");
 
+  // Music Elements
+  const quickMusicBtn = document.getElementById("quick-music-btn");
+  const quickMusicIcon = document.getElementById("quick-music-icon");
   const musicDrawerToggle = document.getElementById("music-drawer-toggle");
   const musicDrawer = document.getElementById("music-drawer");
   const closeDrawerBtn = document.getElementById("close-drawer-btn");
+  const drawerToggleAudioBtn = document.getElementById("drawer-toggle-audio-btn");
 
+  const tabCountryBtn = document.getElementById("tab-country-btn");
+  const tabSpotifyBtn = document.getElementById("tab-spotify-btn");
+  const countrySection = document.getElementById("country-player-section");
+  const spotifySection = document.getElementById("spotify-player-section");
+  const countryIframe = document.getElementById("country-music-iframe");
+  const spotifyIframe = document.getElementById("spotify-music-iframe");
+
+  // Music Prompt Modal
+  const musicPromptModal = document.getElementById("music-prompt-modal");
+  const promptSlideshowTitle = document.getElementById("prompt-slideshow-title");
+  const chooseCountryBtn = document.getElementById("choose-country-btn");
+  const chooseSpotifyBtn = document.getElementById("choose-spotify-btn");
+  const chooseNoneBtn = document.getElementById("choose-none-btn");
+
+  // Billism
   const billismBtn = document.getElementById("billism-btn");
   const billismModal = document.getElementById("billism-modal");
   const billismText = document.getElementById("billism-text");
@@ -45,33 +64,37 @@
     "“Go Seahawks!”"
   ];
 
-  // State
+  // Application State
   const allMedia = window.BILL_MEDIA || [];
   let activePlaylist = [];
   let currentIndex = 0;
   let isPlaying = true;
   let slideTimer = null;
   let currentDuration = parseInt(speedSelect.value, 10);
-  let currentMode = "service"; // 'service' | 'prelude' | 'postlude' | 'archive'
+  let currentMode = "service";
 
-  // Non-repeating tracking set
+  // Audio State
+  let musicEnabled = false;
+  let activeMusicSource = "country"; // 'country' | 'spotify' | 'none'
+  let pendingMode = null;
   const shownInPrelude = new Set();
 
   function init() {
     if (archiveCount) archiveCount.textContent = allMedia.length;
-    
-    // Check if URL has #admin hash to redirect directly
+
     if (window.location.hash === "#admin") {
       window.location.href = "admin.html";
       return;
     }
 
-    setMode("service");
+    // Default load to 7-min service presentation
+    applyModeChange("service");
     buildArchiveGrid();
     bindEvents();
+    updateAudioUI();
   }
 
-  // Fisher-Yates Shuffle
+  // Shuffle Engine
   function shuffle(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -89,7 +112,7 @@
     if (finale) activePlaylist.push(finale);
   }
 
-  // 2. Build Walk-In (Prelude) Pool: Random photos from non-service pool
+  // 2. Build Walk-In (Prelude): Non-service photos, randomized
   function buildPreludePlaylist() {
     shownInPrelude.clear();
     const pool = allMedia.filter(m => !m.isFinale && !m.inService);
@@ -98,7 +121,7 @@
     activePlaylist = shuffled;
   }
 
-  // 3. Build Walk-Out (Postlude) Pool: Random photos NOT shown in Walk-In
+  // 3. Build Walk-Out (Postlude): Photos NOT seen in Walk-In
   function buildPostludePlaylist() {
     let unseen = allMedia.filter(m => !m.isFinale && !shownInPrelude.has(m.src));
     if (unseen.length < 25) {
@@ -107,7 +130,75 @@
     activePlaylist = shuffle(unseen);
   }
 
-  // Render Slide
+  // Audio Management
+  function setMusicSource(source) {
+    activeMusicSource = source;
+    if (source === "country") {
+      tabCountryBtn.classList.add("active");
+      tabSpotifyBtn.classList.remove("active");
+      countrySection.classList.remove("hidden");
+      spotifySection.classList.add("hidden");
+    } else if (source === "spotify") {
+      tabSpotifyBtn.classList.add("active");
+      tabCountryBtn.classList.remove("active");
+      spotifySection.classList.remove("hidden");
+      countrySection.classList.add("hidden");
+    }
+  }
+
+  function playMusic() {
+    musicEnabled = true;
+    updateAudioUI();
+
+    if (activeMusicSource === "country") {
+      setMusicSource("country");
+      // Append autoplay if needed
+      if (!countryIframe.src.includes("autoplay=1")) {
+        const separator = countryIframe.src.includes("?") ? "&" : "?";
+        countryIframe.src = countryIframe.src + separator + "autoplay=1";
+      }
+    } else if (activeMusicSource === "spotify") {
+      setMusicSource("spotify");
+      // Open drawer so the user can hit Spotify's play button (browser iframe security)
+      musicDrawer.classList.remove("hidden");
+    }
+  }
+
+  function pauseMusic() {
+    musicEnabled = false;
+    updateAudioUI();
+
+    // Mute/pause YouTube iframe by posting message
+    try {
+      countryIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    } catch (e) {}
+  }
+
+  function toggleMusic() {
+    if (musicEnabled) {
+      pauseMusic();
+    } else {
+      playMusic();
+    }
+  }
+
+  function updateAudioUI() {
+    if (musicEnabled) {
+      quickMusicIcon.textContent = "🔊";
+      quickMusicBtn.classList.add("music-active");
+      drawerToggleAudioBtn.textContent = "Turn Music Off";
+      drawerToggleAudioBtn.classList.remove("btn-outline");
+      drawerToggleAudioBtn.classList.add("btn-danger");
+    } else {
+      quickMusicIcon.textContent = "🔇";
+      quickMusicBtn.classList.remove("music-active");
+      drawerToggleAudioBtn.textContent = "Turn Music On";
+      drawerToggleAudioBtn.classList.remove("btn-danger");
+      drawerToggleAudioBtn.classList.add("btn-outline");
+    }
+  }
+
+  // Render Slide & Audio Ducking for Videos
   function renderSlide(index) {
     if (index < 0) index = 0;
     if (index >= activePlaylist.length) index = 0;
@@ -135,14 +226,26 @@
       mediaSlot.appendChild(wrap);
       captionText.textContent = "";
     } else if (item.type === "video") {
+      // Auto-duck / pause background music during video
+      if (musicEnabled) {
+        try {
+          countryIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        } catch (e) {}
+      }
+
       const video = document.createElement("video");
       video.src = item.src;
       video.autoplay = true;
       video.controls = true;
       video.playsInline = true;
 
-      // Smart Ducking: Resume timer when video finishes
+      // Resume presentation and restore music when video completes
       video.onended = () => {
+        if (musicEnabled && activeMusicSource === "country") {
+          try {
+            countryIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+          } catch (e) {}
+        }
         nextSlide();
       };
 
@@ -153,7 +256,6 @@
       img.src = item.src;
       img.alt = item.caption || "Memorial Moment";
       img.onerror = () => {
-        // Fallback for case sensitivity or file extension
         if (img.src.endsWith(".JPG")) img.src = img.src.replace(".JPG", ".jpg");
       };
       mediaSlot.appendChild(img);
@@ -165,15 +267,13 @@
     progressBar.style.width = `${pct}%`;
   }
 
-  // Timer Pacing
+  // Slideshow Timer
   function startTimer() {
     clearTimeout(slideTimer);
     if (!isPlaying) return;
 
     const currentItem = activePlaylist[currentIndex];
-    if (currentItem && currentItem.type === "video") {
-      return; // Handled by video.onended
-    }
+    if (currentItem && currentItem.type === "video") return;
 
     slideTimer = setTimeout(() => {
       nextSlide();
@@ -182,9 +282,7 @@
 
   function nextSlide() {
     let nextIdx = currentIndex + 1;
-    if (nextIdx >= activePlaylist.length) {
-      nextIdx = 0;
-    }
+    if (nextIdx >= activePlaylist.length) nextIdx = 0;
     renderSlide(nextIdx);
     startTimer();
   }
@@ -203,8 +301,24 @@
     else clearTimeout(slideTimer);
   }
 
-  // Mode Routing
-  function setMode(mode) {
+  // Request Mode Change with Prompt Modal
+  function requestModeChange(mode) {
+    if (mode === "archive") {
+      applyModeChange("archive");
+      return;
+    }
+
+    pendingMode = mode;
+    let title = "7-Minute Service Presentation";
+    if (mode === "prelude") title = "Walk-In (Prelude Slideshow)";
+    if (mode === "postlude") title = "Walk-Out (Postlude Slideshow)";
+
+    promptSlideshowTitle.textContent = title;
+    musicPromptModal.classList.remove("hidden");
+  }
+
+  // Apply Mode
+  function applyModeChange(mode) {
     clearTimeout(slideTimer);
     currentMode = mode;
 
@@ -244,7 +358,7 @@
     startTimer();
   }
 
-  // Archive Thumbnail Grid (All 419 Items)
+  // Thumbnail Grid
   function buildArchiveGrid(filteredList = null) {
     const list = filteredList || allMedia;
     archiveGrid.innerHTML = "";
@@ -295,7 +409,7 @@
     });
   }
 
-  // Bind Event Listeners
+  // Events
   function bindEvents() {
     prevBtn.addEventListener("click", prevSlide);
     nextBtn.addEventListener("click", nextSlide);
@@ -329,11 +443,43 @@
       }
     });
 
-    modePreludeBtn.addEventListener("click", () => setMode("prelude"));
-    modeServiceBtn.addEventListener("click", () => setMode("service"));
-    modePostludeBtn.addEventListener("click", () => setMode("postlude"));
-    modeArchiveBtn.addEventListener("click", () => setMode("archive"));
+    // Slideshow Mode Selectors with Music Prompt
+    modePreludeBtn.addEventListener("click", () => requestModeChange("prelude"));
+    modeServiceBtn.addEventListener("click", () => requestModeChange("service"));
+    modePostludeBtn.addEventListener("click", () => requestModeChange("postlude"));
+    modeArchiveBtn.addEventListener("click", () => requestModeChange("archive"));
 
+    // Modal Music Choices
+    chooseCountryBtn.addEventListener("click", () => {
+      setMusicSource("country");
+      musicPromptModal.classList.add("hidden");
+      applyModeChange(pendingMode);
+      playMusic();
+    });
+
+    chooseSpotifyBtn.addEventListener("click", () => {
+      setMusicSource("spotify");
+      musicPromptModal.classList.add("hidden");
+      applyModeChange(pendingMode);
+      playMusic();
+    });
+
+    chooseNoneBtn.addEventListener("click", () => {
+      musicPromptModal.classList.add("hidden");
+      pauseMusic();
+      applyModeChange(pendingMode);
+    });
+
+    // Music Drawer & Controls
+    quickMusicBtn.addEventListener("click", toggleMusic);
+    drawerToggleAudioBtn.addEventListener("click", toggleMusic);
+    musicDrawerToggle.addEventListener("click", () => musicDrawer.classList.toggle("hidden"));
+    closeDrawerBtn.addEventListener("click", () => musicDrawer.classList.add("hidden"));
+
+    tabCountryBtn.addEventListener("click", () => setMusicSource("country"));
+    tabSpotifyBtn.addEventListener("click", () => setMusicSource("spotify"));
+
+    // Archive Search
     archiveSearch.addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase().trim();
       if (!q) {
@@ -344,9 +490,7 @@
       }
     });
 
-    musicDrawerToggle.addEventListener("click", () => musicDrawer.classList.toggle("hidden"));
-    closeDrawerBtn.addEventListener("click", () => musicDrawer.classList.add("hidden"));
-
+    // Billism
     billismBtn.addEventListener("click", () => {
       const randomQuip = BILLISMS[Math.floor(Math.random() * BILLISMS.length)];
       billismText.textContent = randomQuip;

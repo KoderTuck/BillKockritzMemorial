@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Mode Selector: Before Service, 7-Min Service, After Service, Full Archive -->
+    <!-- Mode Selector: Walk-In (Prelude), 7-Min Service, Walk-Out (Postlude), Full Archive -->
     <div class="header-center">
       <div class="mode-toggle-group" role="tablist">
         <button id="mode-prelude-btn" class="mode-btn" role="tab" title="Random pool of memories for guest arrival">
@@ -49,7 +49,7 @@
         <span class="icon">💡</span> Billism
       </button>
       <button id="music-drawer-toggle" class="btn btn-primary">
-        <span class="icon">🎵</span> Music
+        <span class="icon">🎵</span> Music Options
       </button>
     </div>
   </header>
@@ -81,7 +81,11 @@
           </div>
         </div>
 
+        <!-- Music On/Off quick-toggle & slideshow pacing -->
         <div class="playback-right">
+          <button id="quick-music-btn" class="ctrl-btn music-ctrl-btn" title="Toggle Background Music On/Off">
+            <span id="quick-music-icon">🔇</span>
+          </button>
           <label for="speed-select" class="speed-label">Pacing:</label>
           <select id="speed-select" class="speed-select">
             <option value="4500">4.5s</option>
@@ -110,28 +114,100 @@
     <div class="archive-grid" id="archive-grid"></div>
   </section>
 
-  <!-- Floating Music Drawer (Spotify Embed & Local Audio Support) -->
+  <!-- Interactive Music Prompt Modal (When Slideshow Is Chosen) -->
+  <div id="music-prompt-modal" class="modal-overlay hidden">
+    <div class="modal-card music-prompt-card">
+      <div class="modal-badge">Background Music Selection</div>
+      <h3 id="prompt-slideshow-title" style="margin-bottom: 8px;">Start Slideshow</h3>
+      <p style="color: #9ba5b5; font-size: 0.9rem; margin-bottom: 20px;">
+        Would you like background music to accompany this presentation?
+      </p>
+
+      <div class="music-choice-grid">
+        <button id="choose-country-btn" class="music-choice-btn">
+          <div class="choice-icon">🎸</div>
+          <div class="choice-content">
+            <strong>Country Guitar Instrumental</strong>
+            <small>Acoustic and steel guitar country tracks</small>
+          </div>
+        </button>
+
+        <button id="choose-spotify-btn" class="music-choice-btn">
+          <div class="choice-icon">🎧</div>
+          <div class="choice-content">
+            <strong>Spotify Service Playlist</strong>
+            <small>Bill's curated memorial song collection</small>
+          </div>
+        </button>
+
+        <button id="choose-none-btn" class="music-choice-btn btn-muted-choice">
+          <div class="choice-icon">🔇</div>
+          <div class="choice-content">
+            <strong>No Music (Silent Slideshow)</strong>
+            <small>Advance slides without background audio</small>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music Drawer / Player Controls Drawer -->
   <aside id="music-drawer" class="music-drawer hidden">
     <div class="drawer-header">
-      <h3>🎶 Bill's Service Playlist</h3>
+      <h3>🎶 Background Music Settings</h3>
       <button id="close-drawer-btn" class="close-btn">✕</button>
     </div>
+    
     <div class="drawer-body">
-      <p class="drawer-help-text">Click the Spotify play button to play alongside slides:</p>
-      <div class="spotify-embed-container">
-        <iframe 
-          style="border-radius:12px" 
-          src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" 
-          width="100%" 
-          height="152" 
-          frameBorder="0" 
-          allowfullscreen="" 
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy">
-        </iframe>
+      <!-- Active player source tabs -->
+      <div class="music-tabs">
+        <button id="tab-country-btn" class="music-tab-btn active">🎸 Country Instrumental</button>
+        <button id="tab-spotify-btn" class="music-tab-btn">🟢 Spotify Playlist</button>
       </div>
+
+      <!-- Container for Country Guitar Stream -->
+      <div id="country-player-section" class="player-panel">
+        <p class="drawer-help-text">Country Guitar Instrumental stream for prelude, service, and postlude:</p>
+        <div class="video-embed-wrapper">
+          <iframe 
+            id="country-music-iframe"
+            width="100%" 
+            height="180" 
+            src="https://www.youtube-nocookie.com/embed/videoseries?list=PL3-Un4HK3geaEeVm19K7d59b2H6u5mF6d&enablejsapi=1" 
+            title="Country Music Guitar Instrumental Playlist" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+
+      <!-- Container for Spotify Embed -->
+      <div id="spotify-player-section" class="player-panel hidden">
+        <p class="drawer-help-text">Press play below on Spotify to stream Bill's memorial playlist:</p>
+        <div class="spotify-embed-container">
+          <iframe 
+            id="spotify-music-iframe"
+            style="border-radius:12px" 
+            src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" 
+            width="100%" 
+            height="152" 
+            frameBorder="0" 
+            allowfullscreen="" 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+
+      <!-- Global Audio State Switch -->
+      <div class="drawer-toggle-row">
+        <span>Background Audio Status:</span>
+        <button id="drawer-toggle-audio-btn" class="btn btn-sm btn-outline">Mute / Turn Off</button>
+      </div>
+
       <div class="drawer-note">
-        <small>💡 Background audio automatically pauses whenever a video clip plays.</small>
+        <small>💡 Background audio automatically pauses whenever a video clip plays, and resumes right after.</small>
       </div>
     </div>
   </aside>
