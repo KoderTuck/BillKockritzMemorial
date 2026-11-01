@@ -41,7 +41,7 @@ When modifying the site, pay special attention to these existing features:
 *   **Video Audio (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`. Per-video volume is saved in each playlist item and is capped at 100%.
 *   **Presentation Modes:** The UI supports switching between distinct modes without reloading the page:
     *   *Walk-In (Prelude):* Random pool of memories.
-    *   *7-Min Service:* A strictly timed (5.5s per photo) curated chronological sequence.
+    *   *7-Min Service:* A strictly timed (5.5s per photo) curated chronological sequence that stops at the finale and pauses background music.
     *   *Walk-Out (Postlude):* Fresh pool of random memories.
     *   *Full Archive:* A grid view of all 400+ media items with text-search capabilities.
 *   **Media Handling:** Web browsers cannot play `.heic` files natively. All Apple photos were converted to `.jpg` or `.png`. Ensure any newly added files are standard web formats.

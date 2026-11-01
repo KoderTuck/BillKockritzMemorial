@@ -7,6 +7,7 @@
   const shownInPrelude = new Set();
   
   let activePlaylist = [];
+  let activeMode = null;
   let currentIndex = 0;
   let isPlaying = true;
   let slideTimer = null;
@@ -66,7 +67,19 @@
     slideTimer = setTimeout(nextSlide, currentDuration);
   }
 
-  function nextSlide() { renderSlide(currentIndex + 1); startTimer(); }
+  function nextSlide() {
+    if (activeMode === "service" && currentIndex >= activePlaylist.length - 1) {
+      clearTimeout(slideTimer);
+      isPlaying = false;
+      const btn = document.getElementById("play-pause-btn");
+      if (btn) btn.textContent = "▶";
+      AudioManager.pause();
+      return;
+    }
+
+    renderSlide(currentIndex + 1);
+    startTimer();
+  }
   function prevSlide() { renderSlide(currentIndex - 1); startTimer(); }
   
   function togglePlay() {
@@ -78,6 +91,7 @@
 
   function applyModeChange(mode) {
     clearTimeout(slideTimer);
+    activeMode = mode;
     ["prelude", "service", "postlude", "long", "archive"].forEach(m => {
       document.getElementById(`mode-${m}-btn`)?.classList.remove("active");
     });
