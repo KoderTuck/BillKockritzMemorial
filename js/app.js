@@ -46,7 +46,7 @@
       vid.src = item.src;
       vid.autoplay = true;
       vid.controls = true;
-      vid.volume = item.volume !== undefined ? item.volume : (window.CONFIG?.videoTargetVolume || 0.55);
+      AudioManager.prepareVideo(vid, item.volume ?? window.CONFIG?.videoTargetVolume ?? 0.55);
       vid.onended = nextSlide;
       mediaSlot.appendChild(vid);
     } else {

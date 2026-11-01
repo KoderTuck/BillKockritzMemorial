@@ -46,10 +46,10 @@
   }
 
   function buildSlider(item) {
-    const vol = item.volume !== undefined ? item.volume : (window.CONFIG ? window.CONFIG.videoTargetVolume : 0.55);
+    const vol = item.volume !== undefined ? item.volume : (window.CONFIG?.videoTargetVolume ?? 0.55);
     const w = document.createElement("div");
     w.className = "volume-slider-wrap";
-    w.innerHTML = `<label>🔊:</label><input type="range" class="volume-range" min="0" max="1" step="0.05" value="${vol}"><span class="volume-pct">${Math.round(vol*100)}%</span>`;
+    w.innerHTML = `<label title="Volume can be boosted up to 300%">🔊:</label><input type="range" class="volume-range" min="0" max="3" step="0.05" value="${vol}"><span class="volume-pct">${Math.round(vol*100)}%</span>`;
     w.querySelector("input").oninput = (e) => {
       const v = parseFloat(e.target.value);
       item.volume = v;

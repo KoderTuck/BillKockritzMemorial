@@ -38,7 +38,7 @@ BillKockritzMemorial/
 ## 4. Core Features & Complex Logic
 When modifying the site, pay special attention to these existing features:
 
-*   **Audio Ducking (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`.
+*   **Video Audio (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`. Per-video volume is saved in each playlist item, can be boosted up to 300%, and uses Web Audio gain with a limiter above 100%.
 *   **Presentation Modes:** The UI supports switching between distinct modes without reloading the page:
     *   *Walk-In (Prelude):* Random pool of memories.
     *   *7-Min Service:* A strictly timed (5.5s per photo) curated chronological sequence.

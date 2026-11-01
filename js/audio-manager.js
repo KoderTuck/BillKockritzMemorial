@@ -5,6 +5,15 @@
   let isPlaying = false;
   let isDucked = false;
   let activeTab = 'country';
+  let videoAudioContext = null;
+
+  function resumeVideoAudioContext() {
+    if (videoAudioContext?.state === 'suspended') {
+      videoAudioContext.resume().catch(err => {
+        console.warn('Could not resume amplified video audio.', err);
+      });
+    }
+  }
 
   function getIframe() {
     return document.getElementById('country-music-iframe');
@@ -108,7 +117,46 @@
       return isPlaying;
     },
 
+    prepareVideo: function(video, volume) {
+      const targetVolume = Number.isFinite(volume) ? Math.max(0, Math.min(volume, 3)) : 0.55;
+      if (targetVolume <= 1) {
+        video.volume = targetVolume;
+        return;
+      }
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) {
+        console.warn('This browser does not support video audio amplification; playing at 100% volume.');
+        video.volume = 1;
+        return;
+      }
+
+      try {
+        videoAudioContext ??= new AudioContext();
+        const source = videoAudioContext.createMediaElementSource(video);
+        const gain = videoAudioContext.createGain();
+        const limiter = videoAudioContext.createDynamicsCompressor();
+        gain.gain.value = targetVolume;
+        limiter.threshold.value = -1;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 20;
+        limiter.attack.value = 0.003;
+        limiter.release.value = 0.25;
+        source.connect(gain);
+        gain.connect(limiter);
+        limiter.connect(videoAudioContext.destination);
+        video.volume = 1;
+        resumeVideoAudioContext();
+      } catch (err) {
+        console.warn('Could not amplify video audio; playing at 100% volume.', err);
+        video.volume = 1;
+      }
+    },
+
     init: function() {
+      document.addEventListener('pointerdown', resumeVideoAudioContext);
+      document.addEventListener('keydown', resumeVideoAudioContext);
+
       const quickBtn = document.getElementById('quick-music-btn');
       if (quickBtn) {
         quickBtn.addEventListener('click', () => AudioManager.toggle());

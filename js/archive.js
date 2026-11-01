@@ -137,6 +137,7 @@
       vid.controls = true;
       vid.autoplay = true;
       vid.playsInline = true;
+      window.AudioManager?.prepareVideo(vid, item.volume ?? window.CONFIG?.videoTargetVolume ?? 0.55);
       vid.style.maxHeight = '72vh';
       vid.style.maxWidth = '82vw';
       container.appendChild(vid);
