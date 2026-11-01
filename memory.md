@@ -45,18 +45,17 @@ When modifying the site, pay special attention to these existing features:
     *   *Walk-Out (Postlude):* Fresh pool of random memories.
     *   *Full Archive:* A grid view of all 400+ media items with text-search capabilities.
 *   **Media Handling:** Web browsers cannot play `.heic` files natively. All Apple photos were converted to `.jpg` or `.png`. Ensure any newly added files are standard web formats.
-*   **Janet's Video Conversion:** Use `Convert-JanetVideoToMP4.ps1` to convert her `.MOV` clip to H.264/AAC `.mp4` with adjustable audio gain. Pass `-UpdateMediaRegistry` to update the media paths after a successful conversion.
 
 ## 5. The 7-Minute Service Narrative
 The user requested a very specific narrative flow for the 7-minute live service presentation. If generating default playlists or updating `admin.js`, this sequence must be preserved:
 1.  **Opening:** Close-up portrait of Bill (`Pic-BillGreatCloseUp.JPG`).
 2.  **Wedding:** Bill and Janet's wedding photos.
 3.  **Early Years:** Young photos of Bill, Janet, and their daughters.
-4.  **Video Interlude 1:** Janet singing to Bill (`Video-JanetSingingSongToBill.MOV`).
+4.  **Video Interlude 1:** Janet singing to Bill (`Video-JanetSingingSongToBill-32dB.mp4`).
 5.  **Travels:** Trips to Alaska, Costa Rica, etc.
 6.  **Outdoors & Hobbies:** Woodcutting, fishing, and 4-wheeling (including `Video-BillOn4Wheeler.mp4`).
 7.  **Family & Grandkids:** Bill with babies/young people.
-8.  **Video Interlude 2:** Fairview kids singing Happy Birthday (`Video-HappyBirthdaySongFromSchoolChildren.MOV`).
+8.  **Video Interlude 2:** Fairview kids singing Happy Birthday (`Video-HappyBirthdaySongFromSchoolChildren.mp4`).
 9.  **Full Family:** Group generational photos.
 10. **Humor:** Bill's funny pictures (sombreros, goofy faces, bunny ears).
 11. **Finale:** Locked final message (`Pic-FinalMessage.png`).

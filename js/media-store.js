@@ -15,29 +15,56 @@ const MediaStore = {
     localStorage.removeItem("BILL_SERVICE_CUSTOM_MEDIA");
   },
 
+  normalizePlaylist: function(playlist) {
+    let changed = false;
+
+    playlist.forEach(item => {
+      if (!item || item.type !== "video") return;
+
+      if (typeof item.volume === "number" && Number.isFinite(item.volume)) {
+        const volume = Math.max(0, Math.min(item.volume, 1));
+        if (volume !== item.volume) {
+          item.volume = volume;
+          changed = true;
+        }
+      }
+    });
+
+    return changed;
+  },
+
+  getSavedPlaylist: function(key) {
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(saved);
+    } catch (e) {
+      console.warn("Could not parse saved playlist for key: " + key, e);
+      return null;
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    if (this.normalizePlaylist(parsed)) {
+      localStorage.setItem(key, JSON.stringify(parsed));
+    }
+    return parsed;
+  },
+
   getMasterMedia: function() {
     return window.BILL_MASTER_MEDIA || [];
   },
 
   getServicePlaylist: function() {
-    const saved = localStorage.getItem(this.KEYS.SERVICE);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) { console.warn("Could not parse saved service playlist", e); }
-    }
+    const savedPlaylist = this.getSavedPlaylist(this.KEYS.SERVICE);
+    if (savedPlaylist) return savedPlaylist;
     return window.BILL_SERVICE_PLAYLIST ? [...window.BILL_SERVICE_PLAYLIST] : [];
   },
 
   getLongShowPlaylist: function() {
-    const saved = localStorage.getItem(this.KEYS.LONG);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) { console.warn("Could not parse saved long show playlist", e); }
-    }
+    const savedPlaylist = this.getSavedPlaylist(this.KEYS.LONG);
+    if (savedPlaylist) return savedPlaylist;
     return window.BILL_LONG_PLAYLIST
       ? [...window.BILL_LONG_PLAYLIST]
       : [...this.getMasterMedia()];

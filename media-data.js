@@ -49,7 +49,7 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
+    "src": "media/Video-JanetSingingSongToBill-32dB.mp4",
     "caption": "Janet Singing to Bill",
     "duration": 25,
     "volume": 1
@@ -222,7 +222,7 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "video",
-    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.MOV",
+    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30
   },
@@ -2804,14 +2804,14 @@ const BILL_LONG_PLAYLIST = [
   },
   {
     "type": "video",
-    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.MOV",
+    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
     "inService": true
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
+    "src": "media/Video-JanetSingingSongToBill-32dB.mp4",
     "caption": "Janet Singing Sweetly to Bill",
     "duration": 25,
     "inService": true,
@@ -5272,14 +5272,14 @@ const BILL_MASTER_MEDIA = [
   },
   {
     "type": "video",
-    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.MOV",
+    "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
     "inService": true
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
+    "src": "media/Video-JanetSingingSongToBill-32dB.mp4",
     "caption": "Janet Singing Sweetly to Bill",
     "duration": 25,
     "inService": true,
