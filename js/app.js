@@ -9,7 +9,7 @@
   let activePlaylist = [];
   let activeMode = null;
   let currentIndex = 0;
-  let isPlaying = true;
+  let isPlaying = false;
   let slideTimer = null;
   let currentDuration = 5500;
 
@@ -45,10 +45,12 @@
     } else if (item.type === "video") {
       const vid = document.createElement("video");
       vid.src = item.src;
-      vid.autoplay = true;
+      vid.autoplay = isPlaying;
       vid.controls = true;
       AudioManager.prepareVideo(vid, item.volume ?? window.CONFIG?.videoTargetVolume ?? 0.55);
-      vid.onended = nextSlide;
+      vid.onended = () => {
+        if (isPlaying) nextSlide();
+      };
       mediaSlot.appendChild(vid);
     } else {
       const img = document.createElement("img");
@@ -73,7 +75,7 @@
       isPlaying = false;
       const btn = document.getElementById("play-pause-btn");
       if (btn) btn.textContent = "▶";
-      AudioManager.pause();
+      AudioManager.setPresentationPlaying(false);
       return;
     }
 
@@ -86,6 +88,16 @@
     isPlaying = !isPlaying;
     const btn = document.getElementById("play-pause-btn");
     if (btn) btn.textContent = isPlaying ? "❚❚" : "▶";
+    AudioManager.setPresentationPlaying(isPlaying);
+    const video = mediaSlot.querySelector("video");
+    if (video) {
+      if (isPlaying) {
+        if (video.ended) nextSlide();
+        else video.play().catch(error => console.warn("Could not resume presentation video.", error));
+      } else {
+        video.pause();
+      }
+    }
     isPlaying ? startTimer() : clearTimeout(slideTimer);
   }
 
@@ -123,6 +135,9 @@
 
   function applyModeChange(mode) {
     clearTimeout(slideTimer);
+    isPlaying = false;
+    mediaSlot.querySelector("video")?.pause();
+    AudioManager.setPresentationPlaying(false);
     activeMode = mode;
     ["prelude", "service", "postlude", "long", "archive"].forEach(m => {
       document.getElementById(`mode-${m}-btn`)?.classList.remove("active");
@@ -133,7 +148,8 @@
     if (mode === "archive") {
       document.getElementById("presentation-view")?.classList.add("hidden");
       document.getElementById("archive-view")?.classList.remove("hidden");
-      isPlaying = false;
+      const btn = document.getElementById("play-pause-btn");
+      if (btn) btn.textContent = "▶";
       return;
     }
 
@@ -143,6 +159,7 @@
     if (mode === "service") {
       activePlaylist = MediaStore.getServicePlaylist();
       currentDuration = MediaStore.getPacingMs('service');
+      AudioManager.selectServiceMusic();
     } else if (mode === "long") {
       activePlaylist = MediaStore.getLongShowPlaylist();
       currentDuration = MediaStore.getPacingMs('long');
@@ -167,9 +184,8 @@
       }
     }
 
-    isPlaying = true;
     const btn = document.getElementById("play-pause-btn");
-    if (btn) btn.textContent = "❚❚";
+    if (btn) btn.textContent = "▶";
     renderSlide(0);
     startTimer();
   }
@@ -211,7 +227,6 @@
         if (mode === "archive") { applyModeChange("archive"); return; }
         clearTimeout(slideTimer);
         applyModeChange(mode);
-        if (mode === "service") AudioManager.playServiceMusic();
       });
     });
 

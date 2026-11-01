@@ -721,6 +721,30 @@ body {
   min-height: 152px;
 }
 
+.site-audio-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 8px 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.site-audio-controls > input[type="range"] {
+  width: 100%;
+}
+
+.site-audio-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-audio-controls label input {
+  width: 96px;
+}
+
 .drawer-note {
   margin-top: 10px;
   color: var(--text-gold);

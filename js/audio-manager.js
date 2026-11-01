@@ -1,7 +1,8 @@
 // Bill Kockritz Memorial music selection and playback controls
 
 (function() {
-  let isPlaying = false;
+  let isPresentationPlaying = false;
+  let isMuted = false;
   let isDucked = false;
   let selectedOptionId = "";
   let selectedOption = null;
@@ -60,16 +61,53 @@
     const statusDot = document.getElementById("guitar-status-dot");
     const statusText = document.getElementById("guitar-status-text");
 
-    quickBtn?.classList.toggle("music-active", isPlaying);
-    if (quickIcon) quickIcon.textContent = isPlaying ? "🔊" : "🔇";
+    quickBtn?.classList.toggle("music-active", !isMuted);
+    if (quickIcon) quickIcon.textContent = isMuted ? "🔇" : "🔊";
+    quickBtn?.setAttribute("aria-label", isMuted ? "Unmute music" : "Mute music");
+    quickBtn?.setAttribute("title", isMuted ? "Unmute Background Music" : "Mute Background Music");
+    quickBtn?.setAttribute("aria-pressed", String(isMuted));
     if (drawerToggleBtn) {
-      drawerToggleBtn.textContent = isPlaying ? "Turn Music Off" : "Turn Music On";
-      drawerToggleBtn.classList.toggle("btn-primary", isPlaying);
-      drawerToggleBtn.classList.toggle("btn-outline", !isPlaying);
+      drawerToggleBtn.textContent = isMuted ? "Unmute Music" : "Mute Music";
+      drawerToggleBtn.classList.toggle("btn-primary", !isMuted);
+      drawerToggleBtn.classList.toggle("btn-outline", isMuted);
+      drawerToggleBtn.setAttribute("aria-pressed", String(isMuted));
     }
-    if (playBtn) playBtn.textContent = isPlaying ? "❚❚ Pause Selected Music" : "▶ Play Selected Music";
-    statusDot?.classList.toggle("playing", isPlaying);
-    if (statusText) statusText.textContent = isPlaying ? "Music is playing" : "Music is paused";
+    if (playBtn) {
+      playBtn.textContent = isMuted ? "🔊 Unmute Music" : "🔇 Mute Music";
+      playBtn.setAttribute("aria-pressed", String(isMuted));
+    }
+    statusDot?.classList.toggle("playing", isPresentationPlaying && !isMuted && !isDucked && Boolean(selectedOption));
+    if (statusText) {
+      statusText.textContent = isMuted ? "Music is muted" :
+        isDucked ? "Music is paused for video" :
+          isPresentationPlaying ? "Music follows presentation playback" : "Music is paused with the presentation";
+    }
+  }
+
+  function syncPlayback() {
+    const shouldPlay = isPresentationPlaying && !isMuted && !isDucked;
+    if (selectedOption?.type === "youtube") {
+      postToYoutube(isMuted ? "mute" : "unMute");
+      postToYoutube(shouldPlay ? "playVideo" : "pauseVideo");
+    } else if (selectedOption?.type === "spotify") {
+      if (typeof spotifyController?.setVolume === "function") {
+        spotifyController.setVolume(isMuted ? 0 : 1);
+      }
+      if (shouldPlay) spotifyController?.play();
+      else spotifyController?.pause();
+    } else if (selectedOption?.type === "local" && localAudio) {
+      localAudio.muted = isMuted;
+      if (shouldPlay && localAudio.paused) {
+        localAudio.play().catch(error => {
+          if (isPresentationPlaying && !isMuted && !isDucked) {
+            setStatus(`Could not play Site file ${siteTracks[siteTrackIndex]}: ${error.message}`);
+          }
+        });
+      } else if (!shouldPlay && !localAudio.paused) {
+        localAudio.pause();
+      }
+    }
+    updateUI();
   }
 
   function renderOptionList() {
@@ -162,8 +200,8 @@
           initialized = true;
           window.clearTimeout(timeout);
           spotifyController = controller;
-          if (isPlaying && !isDucked) controller.play();
-          setStatus("Spotify player ready. Use the embedded controls or Play Selected Music.");
+          syncPlayback();
+          setStatus("Spotify player ready. Playback follows the presentation.");
           resolve();
         });
       });
@@ -178,7 +216,7 @@
       iframe.loading = "lazy";
       iframe.src = `https://open.spotify.com/embed/${type}/${encodeURIComponent(id)}?utm_source=generator`;
       container.replaceChildren(iframe);
-      setStatus("Use the Spotify player controls to start or pause playback.");
+      setStatus("Spotify controls could not connect. Use the embedded controls; playback cannot follow presentation play/pause in this fallback.");
     }
   }
 
@@ -195,6 +233,7 @@
 
     if (!option) {
       setStatus("Add music options in Curator Admin to play background music.");
+      syncPlayback();
       return;
     }
 
@@ -210,8 +249,9 @@
       iframe.allow = "autoplay; encrypted-media; picture-in-picture";
       iframe.allowFullscreen = true;
       iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?enablejsapi=1&playsinline=1`;
+      iframe.addEventListener("load", syncPlayback, { once: true });
       container.appendChild(iframe);
-      setStatus("Use the player controls or Play Selected Music.");
+      setStatus("Music follows presentation playback.");
     } else if (option.type === "spotify") {
       createSpotifyPlayer(option).catch(error => {
         console.error("Could not initialize Spotify player.", error);
@@ -226,17 +266,55 @@
         return;
       }
       const audio = document.createElement("audio");
-      audio.controls = true;
-      audio.preload = "none";
+      audio.preload = "metadata";
       audio.src = siteTracks[0];
-      audio.addEventListener("play", () => {
-        isPlaying = true;
-        setStatus(`Playing Site file ${siteTrackIndex + 1} of ${siteTracks.length}: ${siteTracks[siteTrackIndex].split("/").pop()}`);
-        updateUI();
+      audio.muted = isMuted;
+      const controls = document.createElement("div");
+      controls.className = "site-audio-controls";
+      const seek = document.createElement("input");
+      seek.type = "range";
+      seek.min = "0";
+      seek.max = "0";
+      seek.step = "0.1";
+      seek.value = "0";
+      seek.disabled = true;
+      seek.setAttribute("aria-label", "Seek within current music track");
+      const time = document.createElement("span");
+      time.textContent = "0:00 / 0:00";
+      const volumeLabel = document.createElement("label");
+      volumeLabel.textContent = "Volume";
+      const volume = document.createElement("input");
+      volume.type = "range";
+      volume.min = "0";
+      volume.max = "1";
+      volume.step = "0.05";
+      volume.value = String(audio.volume);
+      volume.setAttribute("aria-label", "Music volume");
+      volumeLabel.appendChild(volume);
+      controls.append(seek, time, volumeLabel);
+      const formatTime = seconds => {
+        if (!Number.isFinite(seconds)) return "0:00";
+        const wholeSeconds = Math.floor(seconds);
+        return `${Math.floor(wholeSeconds / 60)}:${String(wholeSeconds % 60).padStart(2, "0")}`;
+      };
+      const updateTime = () => {
+        seek.value = String(audio.currentTime);
+        time.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+      };
+      audio.addEventListener("loadedmetadata", () => {
+        seek.max = String(audio.duration);
+        seek.disabled = !Number.isFinite(audio.duration);
+        updateTime();
       });
-      audio.addEventListener("pause", () => {
-        if (isDucked || audio.ended) return;
-        isPlaying = false;
+      audio.addEventListener("timeupdate", updateTime);
+      seek.addEventListener("input", () => {
+        audio.currentTime = Number(seek.value);
+      });
+      volume.addEventListener("input", () => {
+        audio.volume = Number(volume.value);
+      });
+      audio.addEventListener("play", () => {
+        setStatus(`Playing Site file ${siteTrackIndex + 1} of ${siteTracks.length}: ${siteTracks[siteTrackIndex].split("/").pop()}`);
         updateUI();
       });
       audio.addEventListener("ended", () => {
@@ -244,31 +322,26 @@
           siteTrackIndex++;
           audio.src = siteTracks[siteTrackIndex];
           audio.load();
-          audio.play().catch(error => {
-            isPlaying = false;
-            setStatus(`Could not play Site file ${siteTracks[siteTrackIndex]}: ${error.message}`);
-            updateUI();
-          });
+          seek.value = "0";
+          seek.max = "0";
+          seek.disabled = true;
+          updateTime();
+          syncPlayback();
         } else {
-          isPlaying = false;
           setStatus("Finished all Site files.");
-          updateUI();
         }
       });
       audio.addEventListener("error", () => {
-        isPlaying = false;
         setStatus(`Could not load ${siteTracks[siteTrackIndex]}. Confirm the file exists in music/ and is published with the site.`);
-        updateUI();
       });
       localAudio = audio;
-      container.appendChild(audio);
-      setStatus(`${siteTracks.length} Site file${siteTracks.length === 1 ? "" : "s"} ready in playback order.`);
+      container.append(audio, controls);
+      setStatus(`${siteTracks.length} Site file${siteTracks.length === 1 ? "" : "s"} ready. Playback follows the presentation.`);
     }
-    updateUI();
+    syncPlayback();
   }
 
   function selectOption(id) {
-    if (isPlaying) pause();
     selectedOptionId = id;
     renderOptionList();
     renderPlayer(getOption(id));
@@ -284,77 +357,49 @@
     }), "*");
   }
 
-  function play() {
-    if (!selectedOption) {
-      setStatus("Choose a music option first.");
-      return;
-    }
-    isPlaying = true;
-    isDucked = false;
-
-    if (selectedOption.type === "youtube") postToYoutube("playVideo");
-    else if (selectedOption.type === "spotify") {
-      if (!spotifyController) {
-        isPlaying = false;
-        setStatus("Use the Spotify player controls to start playback.");
-        updateUI();
-        return;
-      }
-      spotifyController.play();
-    }
-    else if (selectedOption.type === "local" && localAudio) {
-      localAudio.play().catch(error => {
-        isPlaying = false;
-        setStatus(`Could not play Site file ${siteTracks[siteTrackIndex]}: ${error.message}`);
-        updateUI();
-      });
-    }
-    updateUI();
+  function setPresentationPlaying(playing) {
+    isPresentationPlaying = Boolean(playing);
+    syncPlayback();
   }
 
-  function pause() {
-    isPlaying = false;
-    isDucked = false;
-    if (selectedOption?.type === "youtube") postToYoutube("pauseVideo");
-    else if (selectedOption?.type === "spotify") spotifyController?.pause();
-    else localAudio?.pause();
-    updateUI();
+  function toggleMute() {
+    isMuted = !isMuted;
+    syncPlayback();
+  }
+
+  function selectServiceMusic() {
+    const id = window.MusicOptions?.getServiceOptionId();
+    if (id && id !== selectedOptionId) selectOption(id);
   }
 
   const AudioManager = {
-    play,
-    pause,
+    play: function() {
+      setPresentationPlaying(true);
+    },
+    pause: function() {
+      setPresentationPlaying(false);
+    },
     toggle: function() {
-      if (isPlaying) pause();
-      else play();
+      setPresentationPlaying(!isPresentationPlaying);
     },
-    playServiceMusic: function() {
-      const id = window.MusicOptions?.getServiceOptionId();
-      if (id && id !== selectedOptionId) selectOption(id);
-      play();
-    },
+    setPresentationPlaying,
+    toggleMute,
+    selectServiceMusic,
     duck: function() {
-      if (!isPlaying || isDucked) return;
+      if (isDucked) return;
       isDucked = true;
-      if (selectedOption?.type === "youtube") postToYoutube("pauseVideo");
-      else if (selectedOption?.type === "spotify") spotifyController?.pause();
-      else localAudio?.pause();
-      updateUI();
+      syncPlayback();
     },
     unduck: function() {
       if (!isDucked) return;
       isDucked = false;
-      if (isPlaying) {
-        if (selectedOption?.type === "youtube") postToYoutube("playVideo");
-        else if (selectedOption?.type === "spotify") spotifyController?.play();
-        else localAudio?.play().catch(error => {
-          console.warn("Could not resume local music after a video clip.", error);
-        });
-      }
-      updateUI();
+      syncPlayback();
     },
     isPlaying: function() {
-      return isPlaying;
+      return isPresentationPlaying && !isMuted && !isDucked && Boolean(selectedOption);
+    },
+    isMuted: function() {
+      return isMuted;
     },
     prepareVideo: function(video, volume) {
       video.volume = Number.isFinite(volume) ? Math.max(0, Math.min(volume, 1)) : 0.55;
@@ -366,9 +411,9 @@
       drawerToggle?.addEventListener("click", () => drawer?.classList.toggle("hidden"));
       closeDrawer?.addEventListener("click", () => drawer?.classList.add("hidden"));
 
-      document.getElementById("quick-music-btn")?.addEventListener("click", () => AudioManager.toggle());
-      document.getElementById("drawer-toggle-audio-btn")?.addEventListener("click", () => AudioManager.toggle());
-      document.getElementById("music-player-toggle")?.addEventListener("click", () => AudioManager.toggle());
+      document.getElementById("quick-music-btn")?.addEventListener("click", AudioManager.toggleMute);
+      document.getElementById("drawer-toggle-audio-btn")?.addEventListener("click", AudioManager.toggleMute);
+      document.getElementById("music-player-toggle")?.addEventListener("click", AudioManager.toggleMute);
 
       selectedOptionId = window.MusicOptions?.getServiceOptionId() ?? "";
       renderOptionList();
@@ -388,7 +433,6 @@
           const nextOption = options.find(option => option.id === nextId) ?? null;
           if (event.key === "BILL_MUSIC_OPTIONS" &&
               JSON.stringify(nextOption) !== JSON.stringify(selectedOption)) {
-            if (isPlaying) pause();
             renderPlayer(nextOption);
           }
         }
