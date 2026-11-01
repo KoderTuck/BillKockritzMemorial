@@ -1,5 +1,5 @@
 (function () {
-  const stage = document.getElementById("theater-stage");
+  const presentation = document.getElementById("presentation-view");
   const mediaSlot = document.getElementById("media-slot");
   const counter = document.getElementById("slide-counter");
   const progressBar = document.getElementById("progress-bar");
@@ -89,6 +89,38 @@
     isPlaying ? startTimer() : clearTimeout(slideTimer);
   }
 
+  function updateFullscreenUI() {
+    const isFullscreen = document.fullscreenElement === presentation;
+    presentation?.classList.toggle("is-fullscreen", isFullscreen);
+    const fullscreenButton = document.getElementById("fullscreen-btn");
+    if (fullscreenButton) {
+      fullscreenButton.title = isFullscreen ? "Exit fullscreen (F)" : "Enter fullscreen (F)";
+      fullscreenButton.setAttribute("aria-label", isFullscreen ? "Exit fullscreen" : "Enter fullscreen");
+    }
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      if (!document.exitFullscreen) {
+        console.error("Fullscreen exit is not supported by this browser.");
+        return;
+      }
+      document.exitFullscreen().catch(error => {
+        console.error("Could not exit fullscreen presentation.", error);
+      });
+      return;
+    }
+
+    if (!presentation?.requestFullscreen) {
+      console.error("Fullscreen presentation is not supported by this browser.");
+      return;
+    }
+
+    presentation.requestFullscreen().catch(error => {
+      console.error("Could not enter fullscreen presentation.", error);
+    });
+  }
+
   function applyModeChange(mode) {
     clearTimeout(slideTimer);
     activeMode = mode;
@@ -159,10 +191,9 @@
       startTimer();
     });
 
-    document.getElementById("fullscreen-btn")?.addEventListener("click", () => {
-      const el = stage || document.documentElement;
-      !document.fullscreenElement ? el.requestFullscreen?.() : document.exitFullscreen?.();
-    });
+    document.getElementById("fullscreen-btn")?.addEventListener("click", toggleFullscreen);
+    document.getElementById("exit-fullscreen-btn")?.addEventListener("click", toggleFullscreen);
+    document.addEventListener("fullscreenchange", updateFullscreenUI);
 
     window.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
@@ -170,8 +201,7 @@
       if (e.key === "ArrowLeft") prevSlide();
       if (e.code === "Space") { e.preventDefault(); togglePlay(); }
       if (e.key === "f" || e.key === "F") {
-        const el = stage || document.documentElement;
-        !document.fullscreenElement ? el.requestFullscreen?.() : document.exitFullscreen?.();
+        toggleFullscreen();
       }
     });
 

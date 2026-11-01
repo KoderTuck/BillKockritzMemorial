@@ -5300,7 +5300,35 @@ const BILL_MASTER_MEDIA = [
   }
 ];
 
+const BILL_MUSIC_OPTIONS = [
+  {
+    "id": "youtube-guitar",
+    "name": "Guitar Instrumental",
+    "type": "youtube",
+    "url": "https://www.youtube.com/watch?v=6YdIHC4np98"
+  },
+  {
+    "id": "spotify-memorial",
+    "name": "Bill's Memorial Playlist",
+    "type": "spotify",
+    "url": "https://open.spotify.com/playlist/6pgIsgsNQUYw19EpT98bEv"
+  },
+  {
+    "id": "dfe2f4a9-35b6-42ec-8e34-ba2a33eebb8b",
+    "name": "Special Music",
+    "type": "local",
+    "tracks": [
+      "music/07 One More Day.m4a",
+      "music/01 When You Got To Heaven.m4a"
+    ]
+  }
+];
+
+const BILL_SERVICE_MUSIC_OPTION = "dfe2f4a9-35b6-42ec-8e34-ba2a33eebb8b";
+
 window.BILL_SERVICE_PLAYLIST = BILL_SERVICE_PLAYLIST;
 window.BILL_LONG_PLAYLIST = BILL_LONG_PLAYLIST;
 window.BILL_MASTER_MEDIA = BILL_MASTER_MEDIA;
 window.BILL_MEDIA = BILL_MASTER_MEDIA;
+window.BILL_MUSIC_OPTIONS = BILL_MUSIC_OPTIONS;
+window.BILL_SERVICE_MUSIC_OPTION = BILL_SERVICE_MUSIC_OPTION;

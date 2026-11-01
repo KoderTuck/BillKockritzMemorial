@@ -1,29 +1,13 @@
 (function() {
   const OPTIONS_KEY = "BILL_MUSIC_OPTIONS";
   const SERVICE_OPTION_KEY = "BILL_SERVICE_MUSIC_OPTION";
-  const builtInDefaults = [
-    {
-      id: "youtube-guitar",
-      name: "Guitar Instrumental",
-      type: "youtube",
-      url: "https://www.youtube.com/watch?v=6YdIHC4np98"
-    },
-    {
-      id: "spotify-memorial",
-      name: "Bill's Memorial Playlist",
-      type: "spotify",
-      url: "https://open.spotify.com/playlist/6pgIsgsNQUYw19EpT98bEv"
-    }
-  ];
 
-  function getDefaults() {
-    const options = Array.isArray(window.BILL_MUSIC_OPTIONS)
-      ? window.BILL_MUSIC_OPTIONS
-      : builtInDefaults;
-    return options.map(option => ({
+  function getBundledOptions() {
+    return (Array.isArray(window.BILL_MUSIC_OPTIONS) ? window.BILL_MUSIC_OPTIONS : [])
+      .map(option => ({
       ...option,
       ...(Array.isArray(option.tracks) ? { tracks: [...option.tracks] } : {})
-    }));
+      }));
   }
 
   function isValidSiteFilePath(path) {
@@ -33,7 +17,7 @@
 
   function getOptions() {
     const saved = localStorage.getItem(OPTIONS_KEY);
-    if (!saved) return getDefaults();
+    if (!saved) return getBundledOptions();
 
     try {
       const options = JSON.parse(saved);
@@ -45,11 +29,11 @@
           return migrated;
         });
       }
-      console.warn("Saved music options were not a list; using defaults.");
+      console.warn("Saved music options were not a list; using media-data.js options.");
     } catch (error) {
-      console.warn("Could not parse saved music options; using defaults.", error);
+      console.warn("Could not parse saved music options; using media-data.js options.", error);
     }
-    return getDefaults();
+    return getBundledOptions();
   }
 
   function saveOptions(options) {
