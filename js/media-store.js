@@ -38,8 +38,9 @@ const MediaStore = {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) { console.warn("Could not parse saved long show playlist", e); }
     }
-    // Default Long Show is everything in the master pool (excluding finale which is appended later)
-    return [...this.getMasterMedia()];
+    return window.BILL_LONG_PLAYLIST
+      ? [...window.BILL_LONG_PLAYLIST]
+      : [...this.getMasterMedia()];
   },
 
   savePlaylists: function(serviceList, longList, servicePace, longPace) {

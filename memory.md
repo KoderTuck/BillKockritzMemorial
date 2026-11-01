@@ -61,7 +61,7 @@ The user requested a very specific narrative flow for the 7-minute live service 
 11. **Finale:** Locked final message (`Pic-FinalMessage.png`).
 
 ## 6. Standard Operating Procedure for Future Updates
-*   **Media Registry:** `media-data.js` defines `BILL_MASTER_MEDIA` and exports it as `window.BILL_MASTER_MEDIA` and `window.BILL_MEDIA`. The latter is a compatibility alias used by the archive.
+*   **Media Registry:** `media-data.js` defines the `BILL_SERVICE_PLAYLIST`, `BILL_LONG_PLAYLIST`, and `BILL_MASTER_MEDIA` arrays. It exports them to `window`; `window.BILL_MEDIA` remains a compatibility alias for the master archive. The admin page can download a replacement `media-data.js` that preserves the current service and long-show curation.
 *   **Adding Photos:** Do not attempt to build an upload form. To add photos, the user must put the `.jpg` into the `/media` folder and the AI should output a new line for the `BILL_MASTER_MEDIA` array in `media-data.js`.
 *   **Updating CSS:** When providing updated CSS, ensure you do not overwrite the visibility utilities (e.g., `.hidden { display: none !important; }`), as this controls the SPA-like mode switching.
 *   **Vanilla JS Rule:** Do not introduce React, Vue, jQuery, or build steps (Webpack/Vite). The user must be able to run this site locally on a computer without an internet connection if needed.

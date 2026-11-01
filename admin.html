@@ -59,11 +59,16 @@
     }
     .media-table {
       width: 100%;
+      min-width: 1120px;
       border-collapse: collapse;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: 10px;
       overflow: hidden;
+    }
+    .media-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
     }
     .media-table th, .media-table td {
       padding: 12px 16px;
@@ -87,6 +92,41 @@
       border-radius: 4px;
       background: #000;
     }
+    .admin-thumb-button {
+      display: block;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      cursor: zoom-in;
+    }
+    .admin-thumb-button:focus-visible {
+      outline: 2px solid var(--accent-gold);
+      outline-offset: 3px;
+    }
+    .image-preview-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4vh 4vw;
+      background: rgba(0, 0, 0, 0.9);
+      cursor: zoom-out;
+    }
+    .image-preview-modal.hidden {
+      display: none;
+    }
+    .image-preview-modal img {
+      max-width: 92vw;
+      max-height: 92vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+      cursor: default;
+    }
     .badge {
       display: inline-block;
       padding: 2px 8px;
@@ -101,6 +141,17 @@
       display: flex;
       gap: 6px;
       align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+    .position-input {
+      width: 58px;
+      padding: 6px 4px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      text-align: center;
     }
     .btn-icon {
       background: var(--bg-surface);
@@ -164,6 +215,9 @@
       <button id="save-browser-btn" class="btn btn-primary" title="Save current arrangement in browser">
         <span>💾</span> Save to Browser
       </button>
+      <button id="download-media-data-btn" class="btn btn-outline" title="Download the current playlists as media-data.js">
+        Download media-data.js
+      </button>
     </div>
   </header>
 
@@ -195,22 +249,28 @@
       </div>
     </div>
 
-    <table class="media-table">
+    <div class="media-table-wrap">
+      <table class="media-table">
       <thead>
         <tr>
-          <th style="width: 50px;">#</th>
+          <th style="width: 70px;">Position</th>
           <th style="width: 80px;">Preview</th>
           <th>Caption / Asset File</th>
           <th style="width: 100px;">Type</th>
           <th style="width: 180px;">Volume / Timing</th>
-          <th style="width: 150px; text-align: right;">Order / Action</th>
+          <th style="width: 280px; text-align: right;">Order / Action</th>
         </tr>
       </thead>
       <tbody id="media-table-body">
         <!-- Rendered by js/admin.js -->
       </tbody>
-    </table>
+      </table>
+    </div>
   </main>
+
+  <div id="image-preview-modal" class="image-preview-modal hidden" role="dialog" aria-modal="true" aria-label="Image preview">
+    <img id="image-preview-image" alt="" />
+  </div>
 
   <!-- Modular Scripts -->
   <script src="media-data.js"></script>

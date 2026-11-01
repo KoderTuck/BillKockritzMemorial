@@ -14,7 +14,9 @@
     itemCount: document.getElementById("item-count"),
     runtimeEstimate: document.getElementById("runtime-estimate"),
     tableBody: document.getElementById("media-table-body"),
-    saveNotice: document.getElementById("save-notice")
+    saveNotice: document.getElementById("save-notice"),
+    previewModal: document.getElementById("image-preview-modal"),
+    previewImage: document.getElementById("image-preview-image")
   };
 
   if (els.tabSrv) els.tabSrv.onclick = () => { activeTab = 'service'; updateTabs(); renderAll(); };
@@ -78,7 +80,7 @@
       row.className = item.isFinale ? "media-row is-finale" : "media-row";
 
       const numberCell = document.createElement("td");
-      numberCell.textContent = isIncluded ? (position + 1).toString() : "—";
+      numberCell.textContent = !isIncluded ? "—" : item.isFinale ? "Finale" : (currentList.filter(entry => !entry.isFinale).indexOf(item) + 1).toString();
 
       const previewCell = document.createElement("td");
       const thumb = document.createElement("img");
@@ -87,7 +89,17 @@
       thumb.alt = item.caption || filename;
       thumb.loading = "lazy";
       thumb.onerror = () => { thumb.style.display = "none"; };
-      previewCell.appendChild(thumb);
+      const thumbButton = document.createElement("button");
+      thumbButton.className = "admin-thumb-button";
+      thumbButton.type = "button";
+      thumbButton.title = `View ${item.caption || filename} larger`;
+      thumbButton.setAttribute("aria-label", `View ${item.caption || filename} larger`);
+      thumbButton.addEventListener("click", event => {
+        event.stopPropagation();
+        openImagePreview(item);
+      });
+      thumbButton.appendChild(thumb);
+      previewCell.appendChild(thumbButton);
 
       const captionCell = document.createElement("td");
       captionCell.textContent = item.caption || filename;
@@ -114,13 +126,42 @@
       const actions = document.createElement("div");
       actions.className = "row-actions";
       if (isIncluded && !item.isFinale) {
-        const upButton = createActionButton("▲", "Move up", position === 0);
-        upButton.onclick = () => moveItem(item, -1);
-        const downButton = createActionButton("▼", "Move down", position === currentList.length - 1);
-        downButton.onclick = () => moveItem(item, 1);
+        const nonFinalCount = currentList.filter(entry => !entry.isFinale).length;
+        const itemPosition = currentList.filter(entry => !entry.isFinale).indexOf(item);
+        const topButton = createActionButton("Top", "Move to top", itemPosition === 0);
+        topButton.onclick = () => moveItemToPosition(item, 1);
+        const upButton = createActionButton("▲", "Move up", itemPosition === 0);
+        upButton.onclick = () => moveItemToPosition(item, itemPosition);
+        const downButton = createActionButton("▼", "Move down", itemPosition === nonFinalCount - 1);
+        downButton.onclick = () => moveItemToPosition(item, itemPosition + 2);
+        const bottomButton = createActionButton("Bottom", "Move to bottom", itemPosition === nonFinalCount - 1);
+        bottomButton.onclick = () => moveItemToPosition(item, nonFinalCount);
         const removeButton = createActionButton("Remove", "Remove from playlist");
         removeButton.onclick = () => toggle(item, false);
-        actions.append(upButton, downButton, removeButton);
+        const positionInput = document.createElement("input");
+        positionInput.className = "position-input";
+        positionInput.type = "number";
+        positionInput.min = "1";
+        positionInput.max = nonFinalCount.toString();
+        positionInput.step = "1";
+        positionInput.value = (itemPosition + 1).toString();
+        positionInput.setAttribute("aria-label", `Move ${item.caption || filename} to position`);
+        positionInput.title = `Enter a position from 1 to ${nonFinalCount}`;
+        const moveButton = createActionButton("Move", "Move to entered position");
+        moveButton.onclick = () => moveItemToPosition(item, Number(positionInput.value), positionInput);
+        positionInput.addEventListener("change", () => moveItemToPosition(item, Number(positionInput.value), positionInput));
+        positionInput.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            moveItemToPosition(item, Number(positionInput.value), positionInput);
+          }
+        });
+        actions.append(topButton, upButton, downButton, bottomButton, positionInput, moveButton, removeButton);
+      } else if (isIncluded && item.isFinale) {
+        const finaleBadge = document.createElement("span");
+        finaleBadge.className = "badge badge-finale";
+        finaleBadge.textContent = "Locked finale";
+        actions.appendChild(finaleBadge);
       } else if (!isIncluded) {
         const addButton = createActionButton("+ Add", "Add to playlist");
         addButton.onclick = () => toggle(item, true);
@@ -142,12 +183,55 @@
     return button;
   }
 
-  function moveItem(item, direction) {
+  function openImagePreview(item) {
+    if (item.type !== "image" || !els.previewModal || !els.previewImage) return;
+    els.previewImage.src = item.src;
+    els.previewImage.alt = item.caption || item.src.split("/").pop();
+    els.previewModal.classList.remove("hidden");
+  }
+
+  function closeImagePreview() {
+    if (!els.previewModal?.classList.contains("hidden")) {
+      els.previewModal.classList.add("hidden");
+      if (els.previewImage) {
+        els.previewImage.removeAttribute("src");
+        els.previewImage.alt = "";
+      }
+    }
+  }
+
+  els.previewModal?.addEventListener("click", closeImagePreview);
+  els.previewImage?.addEventListener("click", closeImagePreview);
+  document.addEventListener("click", event => {
+    if (!els.previewModal?.classList.contains("hidden") && !els.previewModal.contains(event.target)) {
+      closeImagePreview();
+    }
+  });
+  document.addEventListener("keydown", event => {
+    if (!els.previewModal?.classList.contains("hidden")) closeImagePreview();
+  });
+
+  function moveItemToPosition(item, requestedPosition, input) {
     const list = getActiveList();
-    const position = list.findIndex(entry => entry.src === item.src);
-    const target = position + direction;
-    if (position === -1 || target < 0 || target >= list.length || list[target].isFinale) return;
-    [list[position], list[target]] = [list[target], list[position]];
+    const movableItems = list.filter(entry => !entry.isFinale);
+    const currentPosition = movableItems.findIndex(entry => entry.src === item.src);
+    if (currentPosition === -1) return;
+
+    if (!Number.isInteger(requestedPosition) || requestedPosition < 1 || requestedPosition > movableItems.length) {
+      if (input) {
+        input.setCustomValidity(`Enter a position from 1 to ${movableItems.length}.`);
+        input.reportValidity();
+        input.setCustomValidity("");
+        input.value = (currentPosition + 1).toString();
+      }
+      return;
+    }
+
+    const targetPosition = requestedPosition - 1;
+    if (targetPosition === currentPosition) return;
+    movableItems.splice(targetPosition, 0, movableItems.splice(currentPosition, 1)[0]);
+    const finale = list.find(entry => entry.isFinale);
+    setActiveList(finale ? [...movableItems, finale] : movableItems);
     renderAll();
   }
 
@@ -183,6 +267,29 @@
       els.saveNotice.style.display = "block";
       window.setTimeout(() => { els.saveNotice.style.display = "none"; }, 3000);
     }
+  });
+
+  document.getElementById("download-media-data-btn")?.addEventListener("click", () => {
+    const source = `// Bill Kockritz Memorial Media Registry
+// Generated from the curator admin page.
+
+const BILL_SERVICE_PLAYLIST = ${JSON.stringify(servicePlaylist, null, 2)};
+
+const BILL_LONG_PLAYLIST = ${JSON.stringify(longPlaylist, null, 2)};
+
+const BILL_MASTER_MEDIA = ${JSON.stringify(master, null, 2)};
+
+window.BILL_SERVICE_PLAYLIST = BILL_SERVICE_PLAYLIST;
+window.BILL_LONG_PLAYLIST = BILL_LONG_PLAYLIST;
+window.BILL_MASTER_MEDIA = BILL_MASTER_MEDIA;
+window.BILL_MEDIA = BILL_MASTER_MEDIA;
+`;
+    const url = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "media-data.js";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
   document.getElementById("reset-master-btn")?.addEventListener("click", () => {
