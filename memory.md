@@ -25,7 +25,7 @@ BillKockritzMemorial/
 ├── index.html              # Main presentation stage (UI for all modes)
 ├── admin.html              # Curator Admin dashboard (drag & drop playlist building)
 ├── style.css               # Global stylesheet (theater stage, lightboxes, UI)
-├── media-data.js           # The master array of all media objects (BILL_MEDIA)
+├── media-data.js           # Service playlist and master media registry
 ├── media/                  # Directory containing all local .jpg, .png, and .mp4 files
 └── js/
     ├── config.js           # Shared utilities, default pacing, quotes
@@ -38,7 +38,7 @@ BillKockritzMemorial/
 ## 4. Core Features & Complex Logic
 When modifying the site, pay special attention to these existing features:
 
-*   **Audio Ducking (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. This logic lives in `js/audio-manager.js`.
+*   **Audio Ducking (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`.
 *   **Presentation Modes:** The UI supports switching between distinct modes without reloading the page:
     *   *Walk-In (Prelude):* Random pool of memories.
     *   *7-Min Service:* A strictly timed (5.5s per photo) curated chronological sequence.
@@ -61,6 +61,7 @@ The user requested a very specific narrative flow for the 7-minute live service 
 11. **Finale:** Locked final message (`Pic-FinalMessage.png`).
 
 ## 6. Standard Operating Procedure for Future Updates
-*   **Adding Photos:** Do not attempt to build an upload form. To add photos, the user must put the `.jpg` into the `/media` folder and the AI should output a new line for the `BILL_MEDIA` array in `media-data.js`.
+*   **Media Registry:** `media-data.js` defines `BILL_MASTER_MEDIA` and exports it as `window.BILL_MASTER_MEDIA` and `window.BILL_MEDIA`. The latter is a compatibility alias used by the archive.
+*   **Adding Photos:** Do not attempt to build an upload form. To add photos, the user must put the `.jpg` into the `/media` folder and the AI should output a new line for the `BILL_MASTER_MEDIA` array in `media-data.js`.
 *   **Updating CSS:** When providing updated CSS, ensure you do not overwrite the visibility utilities (e.g., `.hidden { display: none !important; }`), as this controls the SPA-like mode switching.
 *   **Vanilla JS Rule:** Do not introduce React, Vue, jQuery, or build steps (Webpack/Vite). The user must be able to run this site locally on a computer without an internet connection if needed.

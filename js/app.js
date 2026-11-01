@@ -17,13 +17,7 @@
     if (document.getElementById("archive-count")) document.getElementById("archive-count").textContent = MediaStore.getMasterMedia().length;
     
     AudioManager.init();
-    ArchiveManager.buildGrid("archive-grid", MediaStore.getMasterMedia(), (clickedItem) => {
-      activePlaylist = [clickedItem];
-      currentIndex = 0;
-      document.getElementById("presentation-view")?.classList.remove("hidden");
-      document.getElementById("archive-view")?.classList.add("hidden");
-      renderSlide(0);
-    });
+    ArchiveManager.init();
 
     bindGlobalEvents();
     applyModeChange("service");
@@ -38,6 +32,8 @@
     if (!item) return;
 
     mediaSlot.innerHTML = "";
+    if (item.type === "video") AudioManager.duck();
+    else AudioManager.unduck();
 
     if (item.isFinale) {
       mediaSlot.innerHTML = `
@@ -46,13 +42,12 @@
           <p class="finale-quote">${item.caption}</p>
         </div>`;
     } else if (item.type === "video") {
-      AudioManager.duckForVideo();
       const vid = document.createElement("video");
       vid.src = item.src;
       vid.autoplay = true;
       vid.controls = true;
       vid.volume = item.volume !== undefined ? item.volume : (window.CONFIG?.videoTargetVolume || 0.55);
-      vid.onended = () => { AudioManager.resumeAfterVideo(); nextSlide(); };
+      vid.onended = nextSlide;
       mediaSlot.appendChild(vid);
     } else {
       const img = document.createElement("img");
@@ -173,6 +168,7 @@
       document.getElementById(`mode-${mode}-btn`)?.addEventListener("click", () => {
         if (mode === "archive") { applyModeChange("archive"); return; }
         clearTimeout(slideTimer);
+        if (!promptModal) { applyModeChange(mode); return; }
         pendingMode = mode;
         const titles = { prelude: "Walk-In (Prelude Slideshow)", service: "7-Minute Service Presentation", long: "Long Show", postlude: "Walk-Out (Postlude Slideshow)" };
         if (document.getElementById("prompt-slideshow-title")) {
@@ -190,17 +186,6 @@
     });
     document.getElementById("choose-none-btn")?.addEventListener("click", () => {
       promptModal?.classList.add("hidden"); AudioManager.pause(); applyModeChange(pendingMode);
-    });
-
-    document.getElementById("archive-search")?.addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      const master = MediaStore.getMasterMedia();
-      ArchiveManager.buildGrid("archive-grid", q ? master.filter(m => (m.caption || m.src).toLowerCase().includes(q)) : master, (item) => {
-        activePlaylist = [item]; currentIndex = 0;
-        document.getElementById("presentation-view")?.classList.remove("hidden");
-        document.getElementById("archive-view")?.classList.add("hidden");
-        renderSlide(0);
-      });
     });
 
     document.getElementById("billism-btn")?.addEventListener("click", () => {

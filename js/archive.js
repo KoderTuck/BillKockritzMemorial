@@ -7,7 +7,7 @@
   let activeLightboxIndex = 0;
 
   function initArchive() {
-    masterMedia = window.BILL_MEDIA || [];
+    masterMedia = window.BILL_MEDIA || window.BILL_MASTER_MEDIA || [];
     currentFilteredList = [...masterMedia];
 
     const searchInput = document.getElementById('archive-search');

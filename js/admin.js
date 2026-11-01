@@ -10,35 +10,20 @@
   const els = {
     tabSrv: document.getElementById("tab-service-btn"),
     tabLong: document.getElementById("tab-long-btn"),
-    pacingInp: document.getElementById("pacing-input"),
-    curatedList: document.getElementById("service-list"),
-    poolList: document.getElementById("pool-list"),
-    curatedCount: document.getElementById("service-count"),
-    hdrCount: document.getElementById("service-header-count"),
-    poolCount: document.getElementById("pool-count"),
-    estTime: document.getElementById("est-time"),
-    diffPill: document.getElementById("target-diff-pill"),
-    curatedSearch: document.getElementById("service-search"),
-    poolSearch: document.getElementById("pool-search")
+    pacingInp: document.getElementById("pacing-select"),
+    itemCount: document.getElementById("item-count"),
+    runtimeEstimate: document.getElementById("runtime-estimate"),
+    tableBody: document.getElementById("media-table-body"),
+    saveNotice: document.getElementById("save-notice")
   };
 
-  if (!els.tabSrv && !els.tabLong) {
-    // Inject tabs if missing from DOM
-    const bar = document.querySelector(".stats-bar");
-    if (bar) {
-      const tabs = document.createElement("div");
-      tabs.innerHTML = `
-        <button id="tab-service-btn" class="btn active">⏱️ 7-Min Service</button>
-        <button id="tab-long-btn" class="btn btn-outline">📽️ Long Show</button>
-      `;
-      bar.prepend(tabs);
-      els.tabSrv = document.getElementById("tab-service-btn");
-      els.tabLong = document.getElementById("tab-long-btn");
-    }
-  }
+  if (els.tabSrv) els.tabSrv.onclick = () => { activeTab = 'service'; updateTabs(); renderAll(); };
+  if (els.tabLong) els.tabLong.onclick = () => { activeTab = 'long'; updateTabs(); renderAll(); };
 
-  if (els.tabSrv) els.tabSrv.onclick = () => { activeTab = 'service'; els.tabSrv.className="btn active"; if(els.tabLong) els.tabLong.className="btn btn-outline"; renderAll(); };
-  if (els.tabLong) els.tabLong.onclick = () => { activeTab = 'long'; els.tabLong.className="btn active"; if(els.tabSrv) els.tabSrv.className="btn btn-outline"; renderAll(); };
+  function updateTabs() {
+    els.tabSrv?.classList.toggle("active", activeTab === "service");
+    els.tabLong?.classList.toggle("active", activeTab === "long");
+  }
 
   function getActiveList() { return activeTab === 'service' ? servicePlaylist : longPlaylist; }
   function setActiveList(newList) { activeTab === 'service' ? (servicePlaylist = newList) : (longPlaylist = newList); }
@@ -48,34 +33,14 @@
   function updateCalculations() {
     const list = getActiveList();
     const pacing = getActivePacing();
-    if (els.pacingInp) els.pacingInp.value = pacing;
-    if (els.curatedCount) els.curatedCount.textContent = list.length;
-    if (els.hdrCount) els.hdrCount.textContent = list.length;
-    if (els.poolCount) els.poolCount.textContent = master.length;
+    if (els.pacingInp) els.pacingInp.value = Math.round(pacing * 1000).toString();
+    if (els.itemCount) els.itemCount.textContent = list.length;
 
     let sec = 0;
     list.forEach(i => sec += (i.type === "video" ? (i.duration || 20) : pacing));
 
     const formTime = `${Math.floor(sec/60)}m ${Math.round(sec%60).toString().padStart(2, '0')}s`;
-    
-    if (els.estTime) {
-      els.estTime.textContent = activeTab === 'service' ? `${formTime} (Target: 7m ± 1m)` : `${formTime} Total`;
-    }
-
-    if (!els.diffPill) return;
-
-    if (activeTab === 'long') {
-      els.diffPill.innerHTML = `<span style="color:var(--text-light); background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:8px;">Continuous Loop</span>`;
-      return;
-    }
-
-    if (sec >= 360 && sec <= 480) {
-      els.diffPill.innerHTML = `<span style="color:var(--green); background:rgba(126,231,135,0.15); padding:5px 12px; border-radius:8px; font-weight:700;">✅ Perfect Window (${Math.round(sec-420)}s off 7m)</span>`;
-    } else if (sec < 360) {
-      els.diffPill.innerHTML = `<span style="color:var(--gold); background:rgba(229,179,87,0.15); padding:5px 12px; border-radius:8px; font-weight:600;">⏳ Short. Add ~${Math.ceil((360-sec)/pacing)} photos</span>`;
-    } else {
-      els.diffPill.innerHTML = `<span style="color:var(--red); background:rgba(255,123,114,0.15); padding:5px 12px; border-radius:8px; font-weight:600;">⏱️ Long. Trim ~${Math.ceil((sec-480)/pacing)} photos</span>`;
-    }
+    if (els.runtimeEstimate) els.runtimeEstimate.textContent = `~${formTime}`;
   }
 
   function buildSlider(item) {
@@ -97,88 +62,95 @@
     return w;
   }
 
-  function renderList(container, isCuratedView, query) {
-    if (!container) return;
-    container.innerHTML = "";
-    
+  function renderTable() {
+    if (!els.tableBody) return;
+    els.tableBody.replaceChildren();
+
     const currentList = getActiveList();
-    let items = isCuratedView ? currentList : master;
-    const nonFinCount = currentList.filter(i => !i.isFinale).length;
+    const included = new Set(currentList.map(item => item.src));
+    const items = [...currentList, ...master.filter(item => !included.has(item.src))];
 
-    items.forEach((item, idx) => {
-      const fn = item.src.split("/").pop();
-      const cap = item.caption || fn;
-      const q = query.toLowerCase().trim();
-      if (q && !fn.toLowerCase().includes(q) && !cap.toLowerCase().includes(q)) return;
+    items.forEach(item => {
+      const position = currentList.findIndex(entry => entry.src === item.src);
+      const isIncluded = position !== -1;
+      const filename = item.src.split("/").pop();
+      const row = document.createElement("tr");
+      row.className = item.isFinale ? "media-row is-finale" : "media-row";
 
-      const row = document.createElement("div");
-      row.className = `item-row ${item.isFinale ? 'is-finale' : ''}`;
-      
+      const numberCell = document.createElement("td");
+      numberCell.textContent = isIncluded ? (position + 1).toString() : "—";
+
+      const previewCell = document.createElement("td");
       const thumb = document.createElement("img");
-      thumb.className = "item-thumb"; thumb.src = item.src;
+      thumb.className = "admin-thumb";
+      thumb.src = item.src;
+      thumb.alt = item.caption || filename;
       thumb.loading = "lazy";
       thumb.onerror = () => { thumb.style.display = "none"; };
+      previewCell.appendChild(thumb);
 
-      const isIncluded = currentList.some(c => c.src === item.src);
-      const meta = `<span class="filename-code">${fn}</span> ` +
-        (item.type === "video" ? `<span class="badge-video">🎬 Video</span>` : `<span>Photo</span>`) +
-        (isCuratedView ? (item.isFinale ? `<span class="badge-finale">LOCKED FINALE</span>` : '') : ` • ${isIncluded ? '<strong style="color:var(--green)">Added</strong>' : 'Archive'}`);
+      const captionCell = document.createElement("td");
+      captionCell.textContent = item.caption || filename;
+      const filenameLabel = document.createElement("small");
+      filenameLabel.textContent = filename;
+      filenameLabel.style.display = "block";
+      filenameLabel.style.color = "var(--text-muted)";
+      captionCell.appendChild(filenameLabel);
 
-      const info = document.createElement("div");
-      info.className = "item-info";
-      info.innerHTML = `<div class="item-title">${cap}</div><div class="item-meta">${meta}</div>`;
-      if (item.type === "video") info.lastChild.appendChild(buildSlider(item));
+      const typeCell = document.createElement("td");
+      const typeBadge = document.createElement("span");
+      typeBadge.className = item.type === "video" ? "badge badge-video" : "badge badge-image";
+      typeBadge.textContent = item.type === "video" ? "Video" : "Image";
+      typeCell.appendChild(typeBadge);
 
-      const acts = document.createElement("div");
-      acts.className = "btn-group";
-
-      if (!item.isFinale) {
-        if (isCuratedView) {
-          acts.innerHTML = `
-            <div class="jump-box-wrap"><label>#</label><input type="number" class="jump-input" value="${idx+1}" min="1" max="${nonFinCount}"></div>
-            <button class="btn-icon" data-act="top">⏮</button>
-            <button class="btn-icon" data-act="up">▲</button>
-            <button class="btn-icon" data-act="dn">▼</button>
-            <button class="btn-icon" data-act="btm">⏭</button>
-            <button class="btn-icon btn-danger" data-act="rm">✕</button>
-          `;
-          acts.querySelector("input").onchange = (e) => jump(item, parseInt(e.target.value));
-          acts.querySelectorAll("button").forEach(b => {
-            b.onclick = () => {
-              const a = b.dataset.act;
-              if (a==='top') jump(item, 1); if (a==='up') step(item, -1);
-              if (a==='dn') step(item, 1); if (a==='btm') jump(item, nonFinCount);
-              if (a==='rm') toggle(item, false);
-            };
-          });
-        } else {
-          acts.innerHTML = `<button class="btn ${isIncluded ? 'btn-outline':'btn-gold'}" style="padding:4px 10px;font-size:0.75rem">${isIncluded ? 'Remove' : '+ Add'}</button>`;
-          acts.querySelector("button").onclick = () => toggle(item, !isIncluded);
-        }
+      const timingCell = document.createElement("td");
+      if (item.type === "video") {
+        timingCell.appendChild(buildSlider(item));
+      } else {
+        timingCell.textContent = `${getActivePacing()}s`;
       }
-      
-      row.append(thumb, info, acts);
-      container.appendChild(row);
+
+      const actionsCell = document.createElement("td");
+      const actions = document.createElement("div");
+      actions.className = "row-actions";
+      if (isIncluded && !item.isFinale) {
+        const upButton = createActionButton("▲", "Move up", position === 0);
+        upButton.onclick = () => moveItem(item, -1);
+        const downButton = createActionButton("▼", "Move down", position === currentList.length - 1);
+        downButton.onclick = () => moveItem(item, 1);
+        const removeButton = createActionButton("Remove", "Remove from playlist");
+        removeButton.onclick = () => toggle(item, false);
+        actions.append(upButton, downButton, removeButton);
+      } else if (!isIncluded) {
+        const addButton = createActionButton("+ Add", "Add to playlist");
+        addButton.onclick = () => toggle(item, true);
+        actions.appendChild(addButton);
+      }
+
+      actionsCell.appendChild(actions);
+      row.append(numberCell, previewCell, captionCell, typeCell, timingCell, actionsCell);
+      els.tableBody.appendChild(row);
     });
   }
 
-  function jump(item, tarOrig) {
+  function createActionButton(label, title, disabled = false) {
+    const button = document.createElement("button");
+    button.className = "btn-icon";
+    button.textContent = label;
+    button.title = title;
+    button.disabled = disabled;
+    return button;
+  }
+
+  function moveItem(item, direction) {
     const list = getActiveList();
-    const nonFin = list.filter(i => !i.isFinale);
-    const old = nonFin.findIndex(i => i.src === item.src);
-    if (old < 0) return;
-    let tar = Math.max(0, Math.min(tarOrig - 1, nonFin.length - 1));
-    nonFin.splice(tar, 0, nonFin.splice(old, 1)[0]);
-    
-    const fin = list.find(i => i.isFinale);
-    const newList = [...nonFin];
-    if (fin) newList.push(fin);
-    setActiveList(newList);
+    const position = list.findIndex(entry => entry.src === item.src);
+    const target = position + direction;
+    if (position === -1 || target < 0 || target >= list.length || list[target].isFinale) return;
+    [list[position], list[target]] = [list[target], list[position]];
     renderAll();
   }
-  
-  function step(item, dir) { jump(item, getActiveList().filter(i => !i.isFinale).findIndex(i => i.src===item.src) + 1 + dir); }
-  
+
   function toggle(item, include) {
     let list = getActiveList();
     if (include) {
@@ -197,51 +169,28 @@
 
   function renderAll() {
     updateCalculations();
-    renderList(els.curatedList, true, els.curatedSearch?.value || "");
-    renderList(els.poolList, false, els.poolSearch?.value || "");
+    renderTable();
   }
 
-  els.pacingInp?.addEventListener("input", e => { setActivePacing(parseFloat(e.target.value)); renderAll(); });
-  els.curatedSearch?.addEventListener("input", renderAll);
-  els.poolSearch?.addEventListener("input", renderAll);
+  els.pacingInp?.addEventListener("change", e => {
+    setActivePacing(parseInt(e.target.value, 10) / 1000);
+    renderAll();
+  });
 
-  document.getElementById("save-browser-btn").onclick = () => {
+  document.getElementById("save-browser-btn")?.addEventListener("click", () => {
     MediaStore.savePlaylists(servicePlaylist, longPlaylist, servicePacing, longPacing);
-    alert(`Saved to Browser!
-• 7-Min Service: ${servicePlaylist.length} slides
-• Long Show: ${longPlaylist.length} slides`);
-  };
+    if (els.saveNotice) {
+      els.saveNotice.style.display = "block";
+      window.setTimeout(() => { els.saveNotice.style.display = "none"; }, 3000);
+    }
+  });
 
-  document.getElementById("reset-default-btn").onclick = () => {
+  document.getElementById("reset-master-btn")?.addEventListener("click", () => {
     if (confirm("Are you sure you want to clear your saved curation and restore the defaults from media-data.js?")) {
       MediaStore.resetToMaster();
       window.location.reload();
     }
-  };
-
-  document.getElementById("export-js-btn").onclick = () => {
-    const js = `// Bill Kockritz Memorial Media Registry
-// Centralized Data Layer
-
-` +
-      `const BILL_SERVICE_PLAYLIST = ${JSON.stringify(servicePlaylist, null, 2)};
-
-` +
-      `const BILL_MASTER_MEDIA = ${JSON.stringify(master, null, 2)};
-
-` +
-      `window.BILL_SERVICE_PLAYLIST = BILL_SERVICE_PLAYLIST;
-` +
-      `window.BILL_MASTER_MEDIA = BILL_MASTER_MEDIA;
-` +
-      `// Backwards Compatibility
-window.BILL_MEDIA = BILL_MASTER_MEDIA;`;
-      
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([js], { type: "application/javascript" }));
-    a.download = "media-data.js"; 
-    a.click();
-  };
+  });
 
   renderAll();
 })();

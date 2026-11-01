@@ -522,3 +522,4 @@ const BILL_MASTER_MEDIA = [
 // Export to window for the MediaStore to consume
 window.BILL_SERVICE_PLAYLIST = BILL_SERVICE_PLAYLIST;
 window.BILL_MASTER_MEDIA = BILL_MASTER_MEDIA;
+window.BILL_MEDIA = BILL_MASTER_MEDIA;
