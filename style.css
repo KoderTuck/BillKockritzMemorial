@@ -359,7 +359,11 @@ body {
 
 #presentation-view:fullscreen .playback-bar,
 #presentation-view:-webkit-full-screen .playback-bar {
-  display: none;
+  display: none !important;
+}
+
+.presentation-container.is-fullscreen .playback-bar {
+  display: none !important;
 }
 
 #presentation-view:fullscreen .media-slot img,
