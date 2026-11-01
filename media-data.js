@@ -29,6 +29,11 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
+    "src": "media/Pic-BillAndJanet-Young-daughters.JPG",
+    "caption": "Young Bill, Janet & Daughters"
+  },
+  {
+    "type": "image",
     "src": "media/Pic-BillAndJanet-Young.JPG",
     "caption": "Young Bill & Janet"
   },
@@ -36,11 +41,6 @@ const BILL_SERVICE_PLAYLIST = [
     "type": "image",
     "src": "media/Pic-Bill-Young-Baby.png",
     "caption": "Young Bill Holding Baby"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-BillAndJanet-Young-daughters.JPG",
-    "caption": "Young Bill, Janet & Daughters"
   },
   {
     "type": "image",
@@ -158,7 +158,8 @@ const BILL_SERVICE_PLAYLIST = [
     "type": "video",
     "src": "media/Video-BillOn4Wheeler.mp4",
     "caption": "Bill Tearing It Up on the 4-Wheeler",
-    "duration": 15
+    "duration": 15,
+    "volume": 0.55
   },
   {
     "type": "image",
@@ -224,7 +225,8 @@ const BILL_SERVICE_PLAYLIST = [
     "type": "video",
     "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
-    "duration": 30
+    "duration": 30,
+    "volume": 0.55
   },
   {
     "type": "image",
@@ -2800,14 +2802,16 @@ const BILL_LONG_PLAYLIST = [
     "src": "media/Video-BillOn4Wheeler.mp4",
     "caption": "Bill Tearing It Up on the 4-Wheeler",
     "duration": 15,
-    "inService": true
+    "inService": true,
+    "volume": 0.55
   },
   {
     "type": "video",
     "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
-    "inService": true
+    "inService": true,
+    "volume": 0.55
   },
   {
     "type": "video",
@@ -5268,14 +5272,16 @@ const BILL_MASTER_MEDIA = [
     "src": "media/Video-BillOn4Wheeler.mp4",
     "caption": "Bill Tearing It Up on the 4-Wheeler",
     "duration": 15,
-    "inService": true
+    "inService": true,
+    "volume": 0.55
   },
   {
     "type": "video",
     "src": "media/Video-HappyBirthdaySongFromSchoolChildren.mp4",
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
-    "inService": true
+    "inService": true,
+    "volume": 0.55
   },
   {
     "type": "video",
