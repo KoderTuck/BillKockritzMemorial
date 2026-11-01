@@ -49,10 +49,10 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill.MOV",
+    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
     "caption": "Janet Singing to Bill",
     "duration": 25,
-    "volume": 0.9
+    "volume": 1
   },
   {
     "type": "image",
@@ -2811,11 +2811,11 @@ const BILL_LONG_PLAYLIST = [
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill.MOV",
+    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
     "caption": "Janet Singing Sweetly to Bill",
     "duration": 25,
     "inService": true,
-    "volume": 0.9
+    "volume": 1
   },
   {
     "type": "image",
@@ -5279,11 +5279,11 @@ const BILL_MASTER_MEDIA = [
   },
   {
     "type": "video",
-    "src": "media/Video-JanetSingingSongToBill.MOV",
+    "src": "media/Video-JanetSingingSongToBill-24dB.mp4",
     "caption": "Janet Singing Sweetly to Bill",
     "duration": 25,
     "inService": true,
-    "volume": 0.9
+    "volume": 1
   },
   {
     "type": "image",
