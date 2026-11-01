@@ -66,11 +66,6 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-BillAndJanet-JacksonHole-Antlers.PNG",
-    "caption": "Jackson Hole Antler Arch"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-BillAndJanet-OldFaithful.PNG",
     "caption": "Old Faithful, Yellowstone"
   },
@@ -88,16 +83,6 @@ const BILL_SERVICE_PLAYLIST = [
     "type": "image",
     "src": "media/Pic-BillAndJanetInSitkaAL.PNG",
     "caption": "Traveling Sitka, Alaska"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-Bill-Tallkeetna.JPG",
-    "caption": "Visiting Talkeetna, Alaska"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-BillAndJanet-Ferry-with--.JPG",
-    "caption": "Washington Ferry Crossing"
   },
   {
     "type": "image",
@@ -126,18 +111,8 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-Bill-4Wheeler.JPG",
-    "caption": "Bill on the 4-Wheeler"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-Bill-4Wheeler-Snow.JPG",
     "caption": "4-Wheeling in the Snow"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-Bill-4Wheeler-Firewood.PNG",
-    "caption": "Hauling Firewood"
   },
   {
     "type": "image",
@@ -146,20 +121,8 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-Bill-4Wheeler-withFriends.JPG",
-    "caption": "Riding with Friends"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-Bill-4Weekler-Group.jpeg",
     "caption": "4-Wheeler Group Adventure"
-  },
-  {
-    "type": "video",
-    "src": "media/Video-BillOn4Wheeler.mp4",
-    "caption": "Bill Tearing It Up on the 4-Wheeler",
-    "duration": 15,
-    "volume": 0.55
   },
   {
     "type": "image",
@@ -168,23 +131,8 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-Bill-Baby-Tractor.JPG",
-    "caption": "Tractor Ride with Baby"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-Bill-Baby-Camping.jpg",
-    "caption": "Camping with Baby"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-Bill-Baby-SittingOutside.JPG",
     "caption": "Sunny Afternoon Outdoors"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-BillAndJanet-Baby.JPG",
-    "caption": "Bill, Janet, and Baby"
   },
   {
     "type": "image",
@@ -193,23 +141,8 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-Bill-WalkingWithGrandchild.jpg",
-    "caption": "Walking Hand in Hand"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-BillWithGranddaughter.PNG",
     "caption": "Grandpa's Girl"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-Bill-grandkids.JPG",
-    "caption": "Grandkids Joy"
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-BillAndJanet-withGrandkids.JPG",
-    "caption": "Grandkids Love"
   },
   {
     "type": "image",
@@ -227,6 +160,13 @@ const BILL_SERVICE_PLAYLIST = [
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
     "volume": 0.55
+  },
+  {
+    "type": "video",
+    "src": "media/Video-SayCheese-16dB.mp4",
+    "caption": "Say Cheese!",
+    "duration": 23,
+    "volume": 1
   },
   {
     "type": "image",
@@ -315,11 +255,6 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
-    "src": "media/Pic-Bill-Funny-FancyTowelMonkey-Banana.PNG",
-    "caption": "Towel Monkey & Banana Shenanigans"
-  },
-  {
-    "type": "image",
     "src": "media/Pic-BillAndJanetInPrisonCell.PNG",
     "caption": "Locked Up! (Goofy Tourist Moment)"
   },
@@ -328,12 +263,6 @@ const BILL_SERVICE_PLAYLIST = [
     "src": "media/Pic-Bill-Bowling-Surprised.PNG",
     "caption": "Bowling Strike Surprise!",
     "inService": true
-  },
-  {
-    "type": "image",
-    "src": "media/Pic-Bill-Camping-with--.JPG",
-    "caption": "Camp Life in the Woods",
-    "inService": false
   },
   {
     "type": "image",
@@ -354,6 +283,156 @@ const BILL_SERVICE_PLAYLIST = [
   },
   {
     "type": "image",
+    "src": "media/Pic-Bill-SalmonBake-with--.JPG",
+    "caption": "Bill at the Salmon Bake",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Dinner-with--.PNG",
+    "caption": "Evening Dinner Fellowship",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Fish.JPG",
+    "caption": "Bill's Prize Fishing Catch",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-with-- (11).JPG",
+    "caption": "Longtime Friends Together",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-with-- (13).JPG",
+    "caption": "Warm Afternoon Fellowship",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-with-- (14).JPG",
+    "caption": "Great Times Together",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-with-- (2).PNG",
+    "caption": "Special Friends Outing",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-with-- (4).png",
+    "caption": "Good Cheer with Friends",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-withTheGuys (2).JPG",
+    "caption": "The Boys Hanging Out",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Young-Girls.jpg",
+    "caption": "Young Bill Hugging His Girls",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Young-GirlsOnStomach.JPG",
+    "caption": "Roughhousing on the Living Room Floor",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-with-- (3).jpeg",
+    "caption": "Precious Gathering",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-with-- (2).JPG",
+    "caption": "Longtime Friends",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-with-- (12).JPG",
+    "caption": "Friends on the Move",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanetWith---.JPG",
+    "caption": "Warm Days Together",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanetWithFriends.PNG",
+    "caption": "Smiles and Sunshine with Friends",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanetwithJimAndMaureen.PNG",
+    "caption": "Bill & Janet with Jim & Maureen",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-4Wheeler (2).JPG",
+    "caption": "Trail Ride on the 4-Wheeler",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-4Wheeler-Standing.jpg",
+    "caption": "Trailside Standing Break",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-Christmas-with--.PNG",
+    "caption": "Christmas Holiday Gathering",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-TimAndDonnaWorthen.PNG",
+    "caption": "With Tim & Donna Worthen",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-Young-Family.JPG",
+    "caption": "Treasured Early Family Moments",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-BillAndJanet-Young-Daughters-BlackAndWhite.PNG",
+    "caption": "Vintage Black & White Family Portrait",
+    "inService": true
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Bill'sCamp-WithGuyFriends.PNG",
+    "caption": "Guys Retreat at Bill's Camp",
+    "inService": false
+  },
+  {
+    "type": "image",
+    "src": "media/Pic-Bill-Baby (7).PNG",
+    "caption": "Warm Family Smile with Baby",
+    "inService": false
+  },
+  {
+    "type": "image",
     "src": "media/Pic-FinalMessage.png",
     "caption": "“My life’s goal is to get to the end and hear Jesus say, well done, good and faithful servant!”",
     "isFinale": true
@@ -363,7 +442,7 @@ const BILL_SERVICE_PLAYLIST = [
 const BILL_LONG_PLAYLIST = [
   {
     "type": "image",
-    "src": "media/Bill-SalmonBake-with--.JPG",
+    "src": "media/Pic-Bill-SalmonBake-with--.JPG",
     "caption": "Bill at the Salmon Bake",
     "inService": true
   },
@@ -2822,6 +2901,14 @@ const BILL_LONG_PLAYLIST = [
     "volume": 1
   },
   {
+    "type": "video",
+    "src": "media/Video-SayCheese-16dB.mp4",
+    "caption": "Say Cheese!",
+    "duration": 23,
+    "inService": true,
+    "volume": 1
+  },
+  {
     "type": "image",
     "src": "media/Pic-FinalMessage.png",
     "caption": "“My life’s goal is to get to the end and hear Jesus say, well done, good and faithful servant!”",
@@ -2833,7 +2920,7 @@ const BILL_LONG_PLAYLIST = [
 const BILL_MASTER_MEDIA = [
   {
     "type": "image",
-    "src": "media/Bill-SalmonBake-with--.JPG",
+    "src": "media/Pic-Bill-SalmonBake-with--.JPG",
     "caption": "Bill at the Salmon Bake",
     "inService": true
   },
@@ -5288,6 +5375,14 @@ const BILL_MASTER_MEDIA = [
     "src": "media/Video-JanetSingingSongToBill-32dB.mp4",
     "caption": "Janet Singing Sweetly to Bill",
     "duration": 25,
+    "inService": true,
+    "volume": 1
+  },
+  {
+    "type": "video",
+    "src": "media/Video-SayCheese-16dB.mp4",
+    "caption": "Say Cheese!",
+    "duration": 23,
     "inService": true,
     "volume": 1
   },

@@ -75,7 +75,7 @@
       isPlaying = false;
       const btn = document.getElementById("play-pause-btn");
       if (btn) btn.textContent = "▶";
-      AudioManager.setPresentationPlaying(false);
+      AudioManager.fadeOut();
       return;
     }
 

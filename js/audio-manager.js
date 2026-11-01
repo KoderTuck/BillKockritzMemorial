@@ -9,8 +9,11 @@
   let localAudio = null;
   let siteTracks = [];
   let siteTrackIndex = 0;
+  let localBaseVolume = 1;
   let spotifyController = null;
   let spotifyReady;
+  let fadeTimer = null;
+  let fadeLevel = 1;
 
   function getOptions() {
     return window.MusicOptions?.getOptions() ?? [];
@@ -80,26 +83,30 @@
     if (statusText) {
       statusText.textContent = isMuted ? "Music is muted" :
         isDucked ? "Music is paused for video" :
+          fadeTimer !== null ? "Music fading out" :
           isPresentationPlaying ? "Music follows presentation playback" : "Music is paused with the presentation";
     }
   }
 
   function syncPlayback() {
-    const shouldPlay = isPresentationPlaying && !isMuted && !isDucked;
+    const shouldPlay = isPresentationPlaying && !isDucked;
+    const volume = isMuted ? 0 : fadeLevel;
     if (selectedOption?.type === "youtube") {
+      postToYoutube("setVolume", [Math.round(volume * 100)]);
       postToYoutube(isMuted ? "mute" : "unMute");
       postToYoutube(shouldPlay ? "playVideo" : "pauseVideo");
     } else if (selectedOption?.type === "spotify") {
       if (typeof spotifyController?.setVolume === "function") {
-        spotifyController.setVolume(isMuted ? 0 : 1);
+        spotifyController.setVolume(volume);
       }
       if (shouldPlay) spotifyController?.play();
       else spotifyController?.pause();
     } else if (selectedOption?.type === "local" && localAudio) {
       localAudio.muted = isMuted;
+      localAudio.volume = localBaseVolume * volume;
       if (shouldPlay && localAudio.paused) {
         localAudio.play().catch(error => {
-          if (isPresentationPlaying && !isMuted && !isDucked) {
+          if (isPresentationPlaying && !isDucked) {
             setStatus(`Could not play Site file ${siteTracks[siteTrackIndex]}: ${error.message}`);
           }
         });
@@ -223,11 +230,13 @@
   function renderPlayer(option) {
     const container = document.getElementById("music-player-container");
     if (!container) return;
+    cancelFade();
     spotifyController?.destroy();
     spotifyController = null;
     localAudio = null;
     siteTracks = [];
     siteTrackIndex = 0;
+    localBaseVolume = 1;
     container.replaceChildren();
     selectedOption = option ?? null;
 
@@ -311,7 +320,8 @@
         audio.currentTime = Number(seek.value);
       });
       volume.addEventListener("input", () => {
-        audio.volume = Number(volume.value);
+        localBaseVolume = Number(volume.value);
+        audio.volume = localBaseVolume * (isMuted ? 0 : fadeLevel);
       });
       audio.addEventListener("play", () => {
         setStatus(`Playing Site file ${siteTrackIndex + 1} of ${siteTracks.length}: ${siteTracks[siteTrackIndex].split("/").pop()}`);
@@ -347,18 +357,63 @@
     renderPlayer(getOption(id));
   }
 
-  function postToYoutube(command) {
+  function postToYoutube(command, args = []) {
     const iframe = document.querySelector("#music-player-container iframe");
     if (!iframe?.contentWindow || selectedOption?.type !== "youtube") return;
     iframe.contentWindow.postMessage(JSON.stringify({
       event: "command",
       func: command,
-      args: []
+      args
     }), "*");
   }
 
+  function cancelFade() {
+    if (fadeTimer !== null) {
+      window.clearInterval(fadeTimer);
+      fadeTimer = null;
+    }
+    fadeLevel = 1;
+    if (localAudio) localAudio.volume = localBaseVolume;
+  }
+
   function setPresentationPlaying(playing) {
+    if (playing) cancelFade();
+    else if (fadeTimer !== null) cancelFade();
     isPresentationPlaying = Boolean(playing);
+    syncPlayback();
+  }
+
+  function fadeOut(duration = 3000) {
+    if (!isPresentationPlaying || isMuted || isDucked || !selectedOption) {
+      setPresentationPlaying(false);
+      return;
+    }
+
+    cancelFade();
+    if (selectedOption.type === "spotify" && !spotifyController) {
+      setPresentationPlaying(false);
+      setStatus("Spotify's standalone embed cannot be faded or paused by the presentation. Use its controls to stop playback.");
+      return;
+    }
+
+    const fadeDuration = Math.max(0, duration);
+    if (fadeDuration === 0) {
+      setPresentationPlaying(false);
+      return;
+    }
+
+    const startedAt = performance.now();
+    fadeTimer = window.setInterval(() => {
+      const progress = Math.min((performance.now() - startedAt) / fadeDuration, 1);
+      fadeLevel = 1 - progress;
+      syncPlayback();
+      if (progress === 1) {
+        cancelFade();
+        isPresentationPlaying = false;
+        if (selectedOption?.type === "local" && localAudio) localAudio.volume = localBaseVolume;
+        syncPlayback();
+      }
+    }, 50);
     syncPlayback();
   }
 
@@ -383,6 +438,7 @@
       setPresentationPlaying(!isPresentationPlaying);
     },
     setPresentationPlaying,
+    fadeOut,
     toggleMute,
     selectServiceMusic,
     duck: function() {
