@@ -230,6 +230,94 @@
       min-height: 1.4em;
       color: #ff8585;
     }
+    .music-admin-panel {
+      padding: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+    .music-admin-panel h2 {
+      margin-top: 0;
+      color: var(--text-gold);
+    }
+    .music-admin-panel > p {
+      color: var(--text-muted);
+    }
+    .music-local-help code {
+      color: var(--text-gold);
+    }
+    .music-option-form,
+    .music-option-admin-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) 170px minmax(180px, 2fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+    .music-option-form label,
+    .music-option-admin-row label {
+      display: grid;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .music-option-form input,
+    .music-option-form select,
+    .music-option-admin-row input,
+    .music-option-admin-row select {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+    }
+    .music-option-admin-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .music-option-admin-row {
+      grid-template-columns: 28px minmax(120px, 1fr) 170px minmax(180px, 2fr) auto auto;
+      padding: 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+    .music-site-files {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+    }
+    .music-option-form .music-site-files {
+      grid-column: 1 / -1;
+    }
+    .music-option-admin-row.has-site-files {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .music-option-admin-row.has-site-files > label:not(.music-service-choice) {
+      flex: 1 1 180px;
+    }
+    .music-option-admin-row.has-site-files .music-site-files {
+      flex: 1 1 100%;
+    }
+    .music-service-choice {
+      align-self: center;
+    }
+    .music-admin-status {
+      min-height: 1.5em;
+      margin-top: 12px;
+      color: var(--text-gold);
+    }
+    @media (max-width: 760px) {
+      .music-option-form,
+      .music-option-admin-row {
+        grid-template-columns: 1fr;
+      }
+      .music-option-admin-row.has-site-files {
+        display: grid;
+      }
+    }
   </style>
 </head>
 <body>
@@ -283,12 +371,15 @@
       <div class="admin-tabs">
         <button id="tab-service-btn" class="admin-tab-btn active">⏱️ 7-Min Service Playlist</button>
         <button id="tab-long-btn" class="admin-tab-btn">📽️ Long Show Playlist</button>
+        <button id="tab-music-options-btn" class="admin-tab-btn">🎵 Music Options</button>
       </div>
+    </div>
 
+    <section id="media-library-panel">
       <div class="admin-stats-bar">
         <div>Slide Count: <strong id="item-count">0</strong></div>
         <div>
-          Pacing: 
+          Pacing:
           <select id="pacing-select" class="speed-select" style="margin-left:4px;">
             <option value="4500">4.5s</option>
             <option value="5000">5.0s</option>
@@ -300,25 +391,53 @@
         </div>
         <div>Est. Runtime: <strong id="runtime-estimate">~0m 00s</strong></div>
       </div>
-    </div>
 
-    <div class="media-table-wrap">
-      <table class="media-table">
-      <thead>
-        <tr>
-          <th style="width: 70px;">Position</th>
-          <th style="width: 80px;">Preview</th>
-          <th>Caption / Asset File</th>
-          <th style="width: 100px;">Type</th>
-          <th style="width: 180px;">Volume / Timing</th>
-          <th style="width: 280px; text-align: right;">Order / Action</th>
-        </tr>
-      </thead>
-      <tbody id="media-table-body">
-        <!-- Rendered by js/admin.js -->
-      </tbody>
-      </table>
-    </div>
+      <div class="media-table-wrap">
+        <table class="media-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Position</th>
+              <th style="width: 80px;">Preview</th>
+              <th>Caption / Asset File</th>
+              <th style="width: 100px;">Type</th>
+              <th style="width: 180px;">Volume / Timing</th>
+              <th style="width: 280px; text-align: right;">Order / Action</th>
+            </tr>
+          </thead>
+          <tbody id="media-table-body">
+            <!-- Rendered by js/admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="music-options-panel" class="music-admin-panel hidden" aria-labelledby="music-options-heading">
+      <h2 id="music-options-heading">Manage Music Options</h2>
+      <p>Choose the music source used when the 7-Min Service starts. Options are saved in this browser.</p>
+      <p class="music-local-help">Site files must be in the repository's <code>music/</code> folder and published with the site. Add 1 to 5 paths in playback order, such as <code>music/song.m4a</code> or <code>music/song.mp4</code>.</p>
+      <form id="music-option-form" class="music-option-form">
+        <label>
+          Name
+          <input id="music-option-name" name="name" type="text" maxlength="80" required />
+        </label>
+        <label>
+          Type
+          <select id="music-option-type" name="type">
+            <option value="youtube">YouTube link</option>
+            <option value="spotify">Spotify playlist/link</option>
+            <option value="local">Site files</option>
+          </select>
+        </label>
+        <label class="music-option-url-label">
+          <span id="music-option-url-label">Link</span>
+          <input id="music-option-url" name="url" type="text" required />
+        </label>
+        <div id="music-option-site-files" class="music-site-files hidden" aria-label="Site files in playback order"></div>
+        <button class="btn btn-primary" type="submit">Add Music Option</button>
+      </form>
+      <div id="music-option-admin-status" class="music-admin-status" role="status" aria-live="polite"></div>
+      <div id="music-option-admin-list" class="music-option-admin-list"></div>
+    </section>
   </main>
 
   <div id="image-preview-modal" class="image-preview-modal hidden" role="dialog" aria-modal="true" aria-label="Image preview">

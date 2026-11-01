@@ -176,30 +176,13 @@
     });
 
     let pendingMode = null;
-    const promptModal = document.getElementById("music-prompt-modal");
-
     ["prelude", "service", "postlude", "long", "archive"].forEach(mode => {
       document.getElementById(`mode-${mode}-btn`)?.addEventListener("click", () => {
         if (mode === "archive") { applyModeChange("archive"); return; }
         clearTimeout(slideTimer);
-        if (!promptModal) { applyModeChange(mode); return; }
-        pendingMode = mode;
-        const titles = { prelude: "Walk-In (Prelude Slideshow)", service: "7-Minute Service Presentation", long: "Long Show", postlude: "Walk-Out (Postlude Slideshow)" };
-        if (document.getElementById("prompt-slideshow-title")) {
-          document.getElementById("prompt-slideshow-title").textContent = titles[mode];
-        }
-        promptModal?.classList.remove("hidden");
+        applyModeChange(mode);
+        if (mode === "service") AudioManager.playServiceMusic();
       });
-    });
-
-    document.getElementById("choose-country-btn")?.addEventListener("click", () => {
-      AudioManager.activeSource = "country"; promptModal?.classList.add("hidden"); applyModeChange(pendingMode); AudioManager.play();
-    });
-    document.getElementById("choose-spotify-btn")?.addEventListener("click", () => {
-      AudioManager.activeSource = "spotify"; promptModal?.classList.add("hidden"); applyModeChange(pendingMode); AudioManager.play();
-    });
-    document.getElementById("choose-none-btn")?.addEventListener("click", () => {
-      promptModal?.classList.add("hidden"); AudioManager.pause(); applyModeChange(pendingMode);
     });
 
     document.getElementById("billism-btn")?.addEventListener("click", () => {
@@ -208,8 +191,6 @@
     });
     document.getElementById("billism-close-btn")?.addEventListener("click", () => document.getElementById("billism-modal")?.classList.add("hidden"));
     
-    document.getElementById("music-drawer-toggle")?.addEventListener("click", () => document.getElementById("music-drawer")?.classList.toggle("hidden"));
-    document.getElementById("close-drawer-btn")?.addEventListener("click", () => document.getElementById("music-drawer")?.classList.add("hidden"));
   }
 
   window.addEventListener("DOMContentLoaded", init);

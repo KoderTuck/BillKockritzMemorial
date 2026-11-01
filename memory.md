@@ -38,7 +38,8 @@ BillKockritzMemorial/
 ## 4. Core Features & Complex Logic
 When modifying the site, pay special attention to these existing features:
 
-*   **Video Audio (Crucial):** The presentation features background music (either a Spotify embed or a hidden YouTube Country Instrumental stream). **The background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`. Per-video volume is saved in each playlist item and is capped at 100%.
+*   **Video Audio (Crucial):** The presentation supports YouTube, Spotify, and local music files. **Background music MUST automatically pause/mute when a video slide (`.mp4` or `.mov`) plays**, and automatically resume when the next photo slide appears. The slideshow calls `AudioManager.duck()` and `AudioManager.unduck()` from `js/audio-manager.js`. Per-video volume is saved in each playlist item and is capped at 100%.
+*   **Music Options:** YouTube links, Spotify links, and up to five ordered Site files under `music/` are managed in the password-protected Curator Admin. Site files are served from the repository with the website, and the selected 7-Min Service music option is stored in this browser.
 *   **Presentation Modes:** The UI supports switching between distinct modes without reloading the page:
     *   *Walk-In (Prelude):* Random pool of memories.
     *   *7-Min Service:* A strictly timed (5.5s per photo) curated chronological sequence that stops at the finale and pauses background music.

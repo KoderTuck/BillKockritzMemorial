@@ -138,45 +138,12 @@
     </div>
     
     <div class="drawer-body">
-      <!-- Active player source selector tabs -->
-      <div class="music-tabs">
-        <button id="tab-country-btn" class="music-tab-btn active">🎸 Guitar Instrumental</button>
-        <button id="tab-spotify-btn" class="music-tab-btn">🟢 Spotify Playlist</button>
-      </div>
-
-      <!-- YouTube Guitar Stream Panel -->
-      <div id="country-player-section" class="player-panel">
-        <div class="audio-status-card">
-          <div class="status-indicator-row">
-            <span class="status-dot" id="guitar-status-dot"></span>
-            <strong id="guitar-status-text">Ready to stream</strong>
-          </div>
-          <p class="status-desc">
-            Plays YouTube acoustic guitar instrumental directly in the background. Audio automatically pauses whenever slide video clips play.
-          </p>
-        </div>
-        <div class="panel-btn-row">
-          <button id="play-country-btn" class="btn btn-primary" style="flex:1;">▶ Play Guitar</button>
-          <button id="pause-country-btn" class="btn btn-outline" style="flex:1;">❚❚ Pause</button>
-        </div>
-      </div>
-
-      <!-- Spotify Embed Panel -->
-      <div id="spotify-player-section" class="player-panel hidden">
-        <p class="drawer-help-text">Press play below on Spotify to stream Bill's memorial playlist:</p>
-        <div class="spotify-embed-container">
-          <iframe 
-            id="spotify-music-iframe"
-            style="border-radius:12px" 
-            src="https://open.spotify.com/embed/playlist/6pgIsgsNQUYw19EpT98bEv?utm_source=generator" 
-            width="100%" 
-            height="152" 
-            frameBorder="0" 
-            allowfullscreen="" 
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-            loading="lazy">
-          </iframe>
-        </div>
+      <p class="drawer-help-text">Choose a music option. The 7-Min Service uses the option marked for the presentation.</p>
+      <div id="music-option-list" class="music-option-list" role="radiogroup" aria-label="Music options"></div>
+      <div id="music-player-container" class="music-player-container"></div>
+      <div id="music-player-status" class="drawer-help-text" role="status" aria-live="polite"></div>
+      <div class="panel-btn-row">
+        <button id="music-player-toggle" class="btn btn-primary" style="flex:1;">▶ Play Selected Music</button>
       </div>
 
       <!-- Global Audio State Switch -->
@@ -202,28 +169,13 @@
     </div>
   </div>
 
-  <!-- Persistent YouTube Background Player (Hidden) -->
-  <div id="youtube-audio-host" style="position:fixed; left:-9999px; top:-9999px; width:200px; height:200px; opacity:0.001; pointer-events:none; z-index:-9999;">
-    <iframe 
-      id="country-music-iframe"
-      width="200" 
-      height="200" 
-      src="https://www.youtube-nocookie.com/embed/6YdIHC4np98?enablejsapi=1&version=3&loop=1&playlist=6YdIHC4np98&playsinline=1" 
-      title="Guitar Instrumental Audio" 
-      frameborder="0" 
-      allow="autoplay; encrypted-media">
-    </iframe>
-  </div>
-
   <!-- Modular Scripts in Execution Order -->
   <script src="media-data.js"></script>
   <script src="js/config.js"></script>
   <script src="js/media-store.js"></script>
+  <script src="js/music-options.js"></script>
   <script src="js/audio-manager.js"></script>
   <script src="js/archive.js"></script>
   <script src="js/app.js"></script>
-  
-</body>
-  
 </body>
 </html>

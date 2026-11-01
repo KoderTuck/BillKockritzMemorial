@@ -649,6 +649,44 @@ body {
   margin-bottom: 10px;
 }
 
+.music-option-list {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.music-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.music-service-badge {
+  margin-left: auto;
+  color: var(--text-gold);
+  font-size: 0.72rem;
+}
+
+.music-player-container iframe,
+.music-player-container audio {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+}
+
+.music-player-container iframe {
+  min-height: 152px;
+}
+
 .drawer-note {
   margin-top: 10px;
   color: var(--text-gold);

@@ -7,7 +7,9 @@
     "media-data.js",
     "js/config.js",
     "js/media-store.js",
-    "js/admin.js"
+    "js/music-options.js",
+    "js/admin.js",
+    "js/admin-music.js"
   ];
 
   const gate = document.getElementById("admin-auth");
