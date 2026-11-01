@@ -1,7 +1,7 @@
 (function() {
   const OPTIONS_KEY = "BILL_MUSIC_OPTIONS";
   const SERVICE_OPTION_KEY = "BILL_SERVICE_MUSIC_OPTION";
-  const defaults = [
+  const builtInDefaults = [
     {
       id: "youtube-guitar",
       name: "Guitar Instrumental",
@@ -16,6 +16,16 @@
     }
   ];
 
+  function getDefaults() {
+    const options = Array.isArray(window.BILL_MUSIC_OPTIONS)
+      ? window.BILL_MUSIC_OPTIONS
+      : builtInDefaults;
+    return options.map(option => ({
+      ...option,
+      ...(Array.isArray(option.tracks) ? { tracks: [...option.tracks] } : {})
+    }));
+  }
+
   function isValidSiteFilePath(path) {
     return typeof path === "string" &&
       /^music\/(?!.*(?:^|\/)\.\.(?:\/|$))[^\\?#]+\.(?:mp3|m4a|aac|wav|ogg|opus|flac|mp4)$/i.test(path);
@@ -23,7 +33,7 @@
 
   function getOptions() {
     const saved = localStorage.getItem(OPTIONS_KEY);
-    if (!saved) return defaults.map(option => ({ ...option }));
+    if (!saved) return getDefaults();
 
     try {
       const options = JSON.parse(saved);
@@ -39,7 +49,7 @@
     } catch (error) {
       console.warn("Could not parse saved music options; using defaults.", error);
     }
-    return defaults.map(option => ({ ...option }));
+    return getDefaults();
   }
 
   function saveOptions(options) {
@@ -65,7 +75,9 @@
   function getServiceOptionId() {
     const selected = localStorage.getItem(SERVICE_OPTION_KEY);
     const options = getOptions();
-    return options.some(option => option.id === selected) ? selected : options[0]?.id ?? "";
+    if (options.some(option => option.id === selected)) return selected;
+    const bundled = window.BILL_SERVICE_MUSIC_OPTION;
+    return options.some(option => option.id === bundled) ? bundled : options[0]?.id ?? "";
   }
 
   function setServiceOptionId(id) {

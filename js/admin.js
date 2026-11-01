@@ -278,6 +278,8 @@
   });
 
   document.getElementById("download-media-data-btn")?.addEventListener("click", () => {
+    const musicOptions = MusicOptions.getOptions();
+    const serviceMusicOption = MusicOptions.getServiceOptionId();
     const source = `// Bill Kockritz Memorial Media Registry
 // Generated from the curator admin page.
 
@@ -287,10 +289,16 @@ const BILL_LONG_PLAYLIST = ${JSON.stringify(longPlaylist, null, 2)};
 
 const BILL_MASTER_MEDIA = ${JSON.stringify(master, null, 2)};
 
+const BILL_MUSIC_OPTIONS = ${JSON.stringify(musicOptions, null, 2)};
+
+const BILL_SERVICE_MUSIC_OPTION = ${JSON.stringify(serviceMusicOption)};
+
 window.BILL_SERVICE_PLAYLIST = BILL_SERVICE_PLAYLIST;
 window.BILL_LONG_PLAYLIST = BILL_LONG_PLAYLIST;
 window.BILL_MASTER_MEDIA = BILL_MASTER_MEDIA;
 window.BILL_MEDIA = BILL_MASTER_MEDIA;
+window.BILL_MUSIC_OPTIONS = BILL_MUSIC_OPTIONS;
+window.BILL_SERVICE_MUSIC_OPTION = BILL_SERVICE_MUSIC_OPTION;
 `;
     const url = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
     const link = document.createElement("a");
