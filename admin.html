@@ -193,10 +193,59 @@
       margin-bottom: 16px;
       display: none;
     }
+    .admin-app[hidden],
+    .admin-auth[hidden] {
+      display: none !important;
+    }
+    .admin-auth {
+      max-width: 420px;
+      margin: 12vh auto 0;
+      padding: 28px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .admin-auth h2 {
+      margin: 0 0 8px;
+      color: var(--text-gold);
+    }
+    .admin-auth p {
+      margin: 0 0 20px;
+      color: var(--text-muted);
+    }
+    .admin-auth form {
+      display: grid;
+      gap: 12px;
+    }
+    .admin-auth input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+    }
+    .admin-auth-error {
+      min-height: 1.4em;
+      color: #ff8585;
+    }
   </style>
 </head>
 <body>
 
+  <section id="admin-auth" class="admin-auth" aria-labelledby="admin-auth-title">
+    <h2 id="admin-auth-title">Admin access</h2>
+    <p>Enter the password to open the curator dashboard.</p>
+    <form id="admin-auth-form">
+      <label for="admin-password">Password</label>
+      <input id="admin-password" name="password" type="password" autocomplete="current-password" required autofocus />
+      <button id="admin-auth-submit" class="btn btn-primary" type="submit">Unlock Admin</button>
+      <div id="admin-auth-error" class="admin-auth-error" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <div id="admin-app" class="admin-app" hidden aria-hidden="true">
   <!-- Top Navigation Header -->
   <header class="site-header">
     <div class="header-left">
@@ -275,11 +324,8 @@
   <div id="image-preview-modal" class="image-preview-modal hidden" role="dialog" aria-modal="true" aria-label="Image preview">
     <img id="image-preview-image" alt="" />
   </div>
+  </div>
 
-  <!-- Modular Scripts -->
-  <script src="media-data.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/media-store.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/admin-auth.js"></script>
 </body>
 </html>
