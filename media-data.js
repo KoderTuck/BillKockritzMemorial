@@ -8,6 +8,13 @@ const BILL_SERVICE_PLAYLIST = [
     "caption": "Bill's Warm Portrait"
   },
   {
+    "type": "video",
+    "src": "media/Video-SayCheese-16dB.mp4",
+    "caption": "Say Cheese!",
+    "duration": 23,
+    "volume": 1
+  },
+  {
     "type": "image",
     "src": "media/Pic-Bill-Young-Family.PNG",
     "caption": "Young Family Portrait"
@@ -160,13 +167,6 @@ const BILL_SERVICE_PLAYLIST = [
     "caption": "School Children Singing Happy Birthday to Bill",
     "duration": 30,
     "volume": 0.55
-  },
-  {
-    "type": "video",
-    "src": "media/Video-SayCheese-16dB.mp4",
-    "caption": "Say Cheese!",
-    "duration": 23,
-    "volume": 1
   },
   {
     "type": "image",
